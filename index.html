@@ -101,7 +101,7 @@
       box-shadow:var(--shadow-lg);
       background:#1a3a7a;
     }
-    #googleLoginBtn:disabled{
+    #google:disabled{
       opacity:0.6;
       cursor:not-allowed;
       transform:none;
@@ -928,6 +928,10 @@
   function slugify(s) {
     return (s || '').toString().trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g,'');
   }
+function isStandalonePWA() {
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+    || window.navigator.standalone === true;
+}
 
   function monthYearTitle(year, month) {
     return new Date(year, month, 1).toLocaleString('hr-HR', { month: 'long', year: 'numeric' });
@@ -1219,36 +1223,64 @@
   // ---------- AUTHENTICATION FLOW ----------
   console.log('Setting up login button handler...');
   
-  // Google login button click handler
-  googleLoginBtn.addEventListener("click", async () => {
-    console.log("Login button clicked!");
-    try {
-      googleLoginBtn.disabled = true;
-      googleLoginBtn.textContent = 'Prijava u tijeku...';
-      console.log("Creating Google auth provider...");
-      
-      const provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope('email');
-      provider.addScope('profile');
-      
-      console.log("Attempting sign in with popup...");
-      const result = await auth.signInWithPopup(provider);
-      console.log("Sign in successful!", result.user.email);
-    } catch (err) {
-      console.error("Login error:", err);
-      googleLoginBtn.disabled = false;
-      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
-      
-      if (err.code === 'auth/popup-closed-by-user') {
-        console.log("User closed the login popup");
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        console.log("Popup request was cancelled");
-      } else {
-        alert("Prijava nije uspjela: " + (err.message || err));
-      }
-    }
-  });
+ googleLoginBtn.addEventListener("click", async () => {
+  console.log("Login button clicked!");
+  try {
+    googleLoginBtn.disabled = true;
+    // show a simple loading label but keep icon if you want:
+    googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" /> Prijava u tijeku...';
 
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+
+    // If running as an installed PWA / standalone, prefer redirect (popups are unreliable)
+    if (isStandalonePWA()) {
+      console.log('Detected standalone PWA — using signInWithRedirect');
+      await auth.signInWithRedirect(provider);
+      // signInWithRedirect will navigate away; on return the onAuthStateChanged will fire
+      return;
+    }
+
+    // Try popup first in normal browser tabs
+    console.log("Attempting signInWithPopup...");
+    try {
+      const result = await auth.signInWithPopup(provider);
+      console.log("Sign in successful!", result.user && result.user.email);
+      // success will be handled by onAuthStateChanged
+      return;
+    } catch (popupErr) {
+      console.warn('signInWithPopup failed:', popupErr && popupErr.code, popupErr);
+      // If popup was blocked or the environment doesn't support it, fall back to redirect
+      const failCodes = [
+        'auth/popup-blocked',
+        'auth/pop-up-blocked',
+        'auth/operation-not-supported-in-this-environment',
+        'auth/cancelled-popup-request',
+        'auth/popup-closed-by-user'
+      ];
+      if (!popupErr || failCodes.includes(popupErr.code) || popupErr.message?.toLowerCase().includes('popup')) {
+        console.log('Falling back to signInWithRedirect due to popup failure');
+        await auth.signInWithRedirect(provider);
+        return;
+      }
+      // otherwise rethrow to show error to user
+      throw popupErr;
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    googleLoginBtn.disabled = false;
+    googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
+
+    if (err && err.code === 'auth/popup-closed-by-user') {
+      console.log("User closed the login popup");
+    } else if (err && err.code === 'auth/cancelled-popup-request') {
+      console.log("Popup request was cancelled");
+    } else {
+      alert("Prijava nije uspjela: " + (err && err.message ? err.message : err));
+    }
+  }
+});
   // Logout button handler
   logoutBtn.addEventListener("click", async () => {
     console.log("Logout button clicked");
