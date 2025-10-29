@@ -13,11 +13,11 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="icon" href="assets/icon-192.png">
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"type="module"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"type="module"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"type="module"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"type="module"></script>
+  <!-- Firebase SDKs - Compat version for compatibility -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 
   <style>
     :root{
@@ -45,6 +45,7 @@
       line-height:1.6;
     }
 
+    /* Centered login */
     #loginWrapper{
       min-height:100vh;
       display:flex;
@@ -62,12 +63,17 @@
       box-shadow:var(--shadow-lg);
       text-align:center;
       border:1px solid var(--border);
+      backdrop-filter:blur(10px);
     }
     #loginBox h1{
       margin:0 0 8px;
       font-size:28px;
       color:var(--brand);
       font-weight:700;
+      background:var(--gradient);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
     }
     #loginBox p{
       margin:0 0 32px;
@@ -102,6 +108,7 @@
     }
     #googleLoginBtn img{width:20px;height:20px}
 
+    /* App layout */
     #app{
       display:none;
       max-width:100vw;
@@ -137,6 +144,10 @@
       color:var(--brand);
       font-size:24px;
       font-weight:700;
+      background:var(--gradient);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
     }
     .userBar{
       display:flex;
@@ -187,6 +198,7 @@
       transform:translateY(-1px);
     }
 
+    /* Main content */
     .main{
       display:flex;
       gap:16px;
@@ -284,12 +296,20 @@
       gap:2px;
       overflow:hidden;
     }
+    .badge{
+      display:inline-block;
+      padding:2px 4px;
+      border-radius:4px;
+      font-size:10px;
+    }
 
     .available{background:linear-gradient(90deg,#e9eefb,#f7f9ff)}
     .mine{background:#e6fbff;border:2px solid #6BCBFF}
     .reserved-other{background:linear-gradient(90deg,#fff4e0,#fff8f0)}
     .past{opacity:0.5;pointer-events:none}
 
+
+    /* right panel - form */
     .formCard{
       background:var(--card);
       border-radius:12px;
@@ -319,6 +339,7 @@
 
     .small{font-size:13px;color:var(--muted)}
 
+    /* Leaderboard styles */
     .leaderboard-container{
       width:100%;
       overflow-x:auto;
@@ -367,6 +388,23 @@
       text-decoration:underline;
     }
 
+    /* tooltip pre wrapping */
+    .tooltip{
+      white-space:pre-line;
+      font-size:13px;
+      color:#fff;
+      background:#222;
+      padding:6px 8px;border-radius:6px;
+    }
+
+    /* Leaderboard specific tweaks (reuses formCard for consistent look) */
+    .leaderboardCard{
+      margin-top:18px;
+      padding:12px;
+    }
+    .center { text-align:center }
+
+    /* Modal styles */
     .modal-backdrop{
       position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center;z-index:1500;
     }
@@ -374,6 +412,7 @@
     .modal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
     .closeBtn{background:#eee;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
 
+    /* Profile modal specific */
     .profile-avatar-large{
       width:80px;
       height:80px;
@@ -410,6 +449,7 @@
       margin-top:4px;
     }
 
+    /* Offline indicator */
     .offline-indicator{
       position:fixed;
       top:0;
@@ -424,6 +464,7 @@
       display:none;
     }
 
+    /* PWA Install button */
     .install-btn{
       background:var(--accent);
       color:var(--brand);
@@ -435,7 +476,11 @@
       font-size:14px;
       display:none;
     }
+    .install-btn:hover{
+      background:#e6b800;
+    }
 
+    /* Tab navigation */
     .tab-nav{
       display:flex;
       gap:4px;
@@ -457,12 +502,17 @@
       color:var(--muted);
       border-radius:8px;
       transition:all 0.3s ease;
+      position:relative;
       flex:1;
     }
     .tab-btn.active{
       color:var(--brand);
       background:var(--bg);
       box-shadow:var(--shadow);
+    }
+    .tab-btn:hover:not(.active){
+      background:var(--bg);
+      color:var(--brand);
     }
     .tab-content{
       display:none;
@@ -471,6 +521,19 @@
       display:block;
     }
 
+    /* Notification animations */
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Update banner */
     .update-banner{
       position:fixed;
       top:0;
@@ -500,6 +563,7 @@
       font-size:12px;
     }
 
+    /* Mobile responsive design */
     @media (max-width:768px){
       .main{
         flex-direction:column;
@@ -518,21 +582,107 @@
         width:calc(100% - 32px);
       }
       .tab-btn{
-        padding:10px 12px;
-        font-size:13px;
+        padding:10px 16px;
+        font-size:14px;
+      }
+      .controls{
+        flex-direction:column;
+        align-items:stretch;
+        gap:12px;
+      }
+      .monthNav{
+        justify-content:center;
+      }
+      .navBtn{
+        flex:1;
+        text-align:center;
+      }
+      .day{
+        min-height:50px;
+        padding:3px;
+      }
+      .day .num{
+        font-size:12px;
+      }
+      .day .items{
+        font-size:9px;
+      }
+      .userBar{
+        flex-direction:column;
+        gap:8px;
+        align-items:stretch;
+      }
+      .modal{
+        width:95%;
+        margin:10px;
+      }
+      header.appHeader{
+        padding:12px 16px;
+        flex-wrap:wrap;
+      }
+      .brand h2{
+        font-size:20px;
+      }
+      .leaderboard-container{
+        margin-top:12px;
+      }
+      .leaderboard-table th{
+        padding:10px 6px;
+        font-size:12px;
+      }
+      .leaderboard-table td{
+        padding:10px 6px;
+        font-size:12px;
       }
       .profile-stats{
         grid-template-columns:1fr;
         gap:12px;
       }
     }
+
+    @media (max-width:480px){
+      .day{
+        min-height:45px;
+        font-size:10px;
+      }
+      .day .num{
+        font-size:11px;
+      }
+      .day .items{
+        font-size:8px;
+      }
+      .weekday{
+        font-size:10px;
+        padding:6px 1px;
+      }
+      .navBtn{
+        padding:6px 8px;
+        font-size:12px;
+      }
+      .monthTitle{
+        font-size:14px;
+      }
+      .leaderboard-table th{
+        padding:8px 4px;
+        font-size:11px;
+      }
+      .leaderboard-table td{
+        padding:8px 4px;
+        font-size:11px;
+      }
+      .leaderboard-table{
+        min-width:280px;
+      }
+    }
   </style>
 </head>
 <body>
+
+  <!-- LOGIN -->
   <div id="loginWrapper">
-    <div id="loginBox">
-      <h1>Prijava</h1>
-      <p>Prijavite se putem Google računa.</p>
+    <div id="loginBox" role="dialog" aria-labelledby="loginTitle">
+      <h1 id="loginTitle">Prijava</h1>
+      <p>Prijavite se putem Google računa da biste rezervirali teren.</p>
       <button id="googleLoginBtn">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />
         Prijavi se s Googleom
@@ -543,14 +693,17 @@
     </div>
   </div>
 
+  <!-- Offline indicator -->
   <div id="offlineIndicator" class="offline-indicator">
-    Nema internetske veze
+    Nema internetske veze - radite offline
   </div>
 
+  <!-- APP -->
   <div id="app">
     <header class="appHeader">
       <div class="brand">
         <h2>Rezervacije</h2>
+        <div class="small">Upravljanje terminima</div>
       </div>
 
       <div class="userBar">
@@ -558,110 +711,123 @@
           <div class="profileAvatar">U</div>
           <span class="profileName">User</span>
         </button>
-        <button id="installBtn" class="install-btn">📱 Instaliraj</button>
+        <button id="installBtn" class="install-btn">📱 Instaliraj App</button>
         <button id="logoutBtn" class="logoutBtn">Odjava</button>
       </div>
     </header>
 
-    <div class="tab-nav">
-      <button class="tab-btn active" data-tab="calendar">📅 Kalendar</button>
-      <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
-      <button class="tab-btn" data-tab="notifications">🔔 Obavještenja</button>
-    </div>
-
-    <div id="calendarTab" class="tab-content active">
-      <div class="main">
-        <section class="calendarCard">
-          <div class="controls">
-            <div class="monthNav">
-              <button id="prevMonth" class="navBtn">&lt; Prethodni</button>
-              <div class="monthTitle" id="monthTitle">Rujan 2025</div>
-              <button id="nextMonth" class="navBtn">Sljedeći &gt;</button>
-            </div>
-            <div class="small">Kliknite dan za rezervaciju</div>
-          </div>
-
-          <div class="weekdays" id="weekdays"></div>
-          <div class="grid" id="daysGrid"></div>
-        </section>
-
-        <aside class="formCard">
-          <h3>Rezerviraj termin</h3>
-          <div class="small">Odabrani datum: <span id="selectedDateText">—</span></div>
-
-          <form id="reservationForm">
-            <div class="formRow">
-              <label class="small">Vrijeme</label>
-              <input type="time" id="timeInput" required />
-            </div>
-
-            <div class="formRow">
-              <label class="small">Teren</label>
-              <select id="terenSelect" required>
-                <option value="">Odaberite teren</option>
-                <option>Jadran</option>
-                <option>Contadina</option>
-                <option>Secrete</option>
-                <option>Maj</option>
-              </select>
-            </div>
-
-            <div style="display:flex;gap:8px">
-              <button type="submit" class="primaryBtn">Rezerviraj</button>
-              <button type="button" id="cancelBtn" class="secondary">Odustani</button>
-            </div>
-
-            <div style="margin-top:12px" id="formMsg" class="small"></div>
-          </form>
-        </aside>
+    <main class="main">
+      <!-- Tab Navigation -->
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="calendar">📅 Kalendar</button>
+        <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
+        <button class="tab-btn" data-tab="notifications">🔔 Obavještenja</button>
       </div>
-    </div>
 
-    <div id="leaderboardTab" class="tab-content">
-      <section class="calendarCard">
-        <h3>🏆 Leaderboard</h3>
-        <div id="leaderboardLoading" class="small">Učitavanje...</div>
-
-        <div class="leaderboard-container">
-          <table id="leaderboardTable" class="leaderboard-table" style="display:none;">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th class="center">Wins</th>
-                <th class="center">Losses</th>
-                <th class="center">Diff</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboardBody"></tbody>
-          </table>
+      <!-- Calendar Tab -->
+      <div id="calendarTab" class="tab-content active">
+        <div class="main">
+      <section class="calendarCard" aria-label="Kalendar">
+        <div class="controls">
+          <div class="monthNav">
+            <button id="prevMonth" class="navBtn">&lt; Prethodni</button>
+            <div class="monthTitle" id="monthTitle">Rujan 2025</div>
+            <button id="nextMonth" class="navBtn">Sljedeći &gt;</button>
+          </div>
+          <div class="small">Kliknite dan za rezervaciju ili pregled</div>
         </div>
 
-        <div id="leaderboardEmpty" class="small" style="display:none">Nema odigranih igara.</div>
+        <div class="weekdays" id="weekdays"></div>
+        <div class="grid" id="daysGrid" role="grid"></div>
       </section>
-    </div>
 
-    <div id="notificationsTab" class="tab-content">
-      <section class="calendarCard">
-        <h3>🔔 Obavještenja</h3>
-        <div id="notificationsLoading" class="small">Učitavanje...</div>
-        <div id="notificationsList" style="display:none;"></div>
-        <div id="notificationsEmpty" class="small" style="display:none;">Nema obavještenja.</div>
-      </section>
-    </div>
+      <aside class="formCard" aria-label="Forma za rezervaciju">
+        <h3>Rezerviraj termin</h3>
+        <div class="small">Odabrani datum: <span id="selectedDateText">—</span></div>
+
+        <form id="reservationForm">
+          <div class="formRow">
+            <label class="small">Vrijeme</label>
+            <input type="time" id="timeInput" required />
+          </div>
+
+          <div class="formRow">
+            <label class="small">Teren</label>
+            <select id="terenSelect" required>
+              <option value="">Odaberite teren</option>
+              <option>Jadran</option>
+              <option>Contadina</option>
+              <option>Secrete</option>
+              <option>Maj</option>
+            </select>
+          </div>
+
+          <div style="display:flex;gap:8px">
+            <button type="submit" class="primaryBtn">Rezerviraj</button>
+            <button type="button" id="cancelBtn" class="secondary">Odustani</button>
+          </div>
+
+          <div style="margin-top:12px" id="formMsg" class="small"></div>
+        </form>
+      </aside>
+        </div>
+      </div>
+
+      <!-- Leaderboard Tab -->
+      <div id="leaderboardTab" class="tab-content">
+        <section class="calendarCard" aria-label="Leaderboard">
+          <h3>🏆 Leaderboard</h3>
+      <div id="leaderboardLoading" class="small">Učitavanje...</div>
+
+          <div class="leaderboard-container">
+            <table id="leaderboardTable" class="leaderboard-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th class="center">Wins</th>
+            <th class="center">Losses</th>
+                  <th class="center">Diff</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+          </div>
+
+      <div id="leaderboardEmpty" class="small" style="display:none">Nema odigranih igara za prikaz.</div>
+      <div style="margin-top:8px;" class="small">Scores are aggregated from logged 1v1 games.</div>
+    </section>
+      </div>
+
+      <!-- Notifications Tab -->
+      <div id="notificationsTab" class="tab-content">
+        <section class="calendarCard" aria-label="Notifications">
+          <h3>🔔 Obavještenja</h3>
+          <div id="notificationsLoading" class="small">Učitavanje...</div>
+          <div id="notificationsList" style="display:none;"></div>
+          <div id="notificationsEmpty" class="small" style="display:none;">Nema obavještenja.</div>
+        </section>
+      </div>
+
+    </main>
   </div>
 
+  <!-- Modal backdrop for profile -->
   <div id="modalBackdrop" class="modal-backdrop">
-    <div class="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-header">
-        <h2>Profil igrača</h2>
-        <button id="modalClose" class="closeBtn">Zatvori</button>
+        <h2 id="modalTitle">Profil igrača</h2>
+        <div>
+          <button id="modalClose" class="closeBtn">Zatvori</button>
+        </div>
       </div>
       <div id="modalContent"></div>
     </div>
   </div>
 
 <script>
-  // Initialize Firebase
+  console.log('Script starting...');
+  
+  // ---------- FIREBASE CONFIG AND INITIALIZATION ----------
   const firebaseConfig = {
     apiKey: "AIzaSyAnFYrebR69a2rmYeT-TWrX1RB_Tzsh3Tk",
     authDomain: "hoops-165ec.firebaseapp.com",
@@ -672,6 +838,7 @@
     measurementId: "G-C3YPHXZCXN"
   };
 
+  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
@@ -680,21 +847,23 @@
   // Initialize messaging if supported
   try {
     messaging = firebase.messaging();
+    console.log('Firebase Messaging initialized');
   } catch (error) {
     console.warn('Firebase Messaging not supported:', error);
   }
 
-  // Set persistence
+  // Set authentication persistence to LOCAL (stays logged in after browser restart)
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => {
-      console.log('Auth persistence set to LOCAL');
+      console.log('Auth persistence set to LOCAL - users will stay logged in');
     })
     .catch((error) => {
-      console.error('Error setting persistence:', error);
+      console.error('Error setting auth persistence:', error);
     });
 
-  // DOM refs
+  // ---------- DOM ELEMENT REFERENCES ----------
   const loginWrapper = document.getElementById("loginWrapper");
+  const loginBox = document.getElementById("loginBox");
   const googleLoginBtn = document.getElementById("googleLoginBtn");
   const loginLoading = document.getElementById("loginLoading");
 
@@ -716,13 +885,13 @@
   const cancelBtn = document.getElementById("cancelBtn");
   const formMsg = document.getElementById("formMsg");
 
-  const leaderboardBody = document.getElementById("leaderboardBody");
-  const leaderboardTable = document.getElementById("leaderboardTable");
   const leaderboardLoading = document.getElementById("leaderboardLoading");
+  const leaderboardTable = document.getElementById("leaderboardTable");
+  const leaderboardBody = document.getElementById("leaderboardBody");
   const leaderboardEmpty = document.getElementById("leaderboardEmpty");
 
-  const notificationsList = document.getElementById("notificationsList");
   const notificationsLoading = document.getElementById("notificationsLoading");
+  const notificationsList = document.getElementById("notificationsList");
   const notificationsEmpty = document.getElementById("notificationsEmpty");
 
   const modalBackdrop = document.getElementById("modalBackdrop");
@@ -731,22 +900,31 @@
 
   const offlineIndicator = document.getElementById('offlineIndicator');
 
-  // State
+  // ---------- STATE VARIABLES ----------
   let currentUser = null;
   let visibleYear = (new Date()).getFullYear();
-  let visibleMonth = (new Date()).getMonth();
-  let selectedDay = null;
-  let reservationsCache = [];
+  let visibleMonth = (new Date()).getMonth(); // 0-based
+  let selectedDay = null; // Date object (year,month,day)
+  let reservationsCache = []; // cached reservation documents
   let isOnline = navigator.onLine;
   let fcmToken = null;
+
+  // Snapshot unsubscribe holders
   let leaderboardUnsub = null;
+  let profileUnsub1 = null;
+  let profileUnsub2 = null;
   let notificationsUnsub = null;
   let gamesUnsub = null;
+
+  // PWA install prompt
   let deferredPrompt;
 
-  const WEEKDAYS = ["Pon","Uto","Sri","Čet","Pet","Sub","Ned"];
+  // Notification permission
+  let notificationPermission = Notification.permission;
 
-  // Utility functions
+  const WEEKDAYS = ["Pon","Uto","Sri","Čet","Pet","Sub","Ned"]; 
+
+  // ---------- UTILITY FUNCTIONS ----------
   function slugify(s) {
     return (s || '').toString().trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g,'');
   }
@@ -756,7 +934,9 @@
   }
 
   function startOfMonthWeekday(year, month) {
-    const jsDay = new Date(year, month, 1).getDay();
+    // return 0..6 where 0 = Monday (we want Monday first)
+    const jsDay = new Date(year, month, 1).getDay(); // 0 Sunday .. 6 Saturday
+    // convert so Monday=0..Sunday=6
     return (jsDay === 0) ? 6 : jsDay - 1;
   }
 
@@ -764,7 +944,7 @@
     return `${String(d).padStart(2,'0')}.${String(m+1).padStart(2,'0')}.${y}`;
   }
 
-  // Initialize FCM
+  // ---------- FCM TOKEN MANAGEMENT ----------
   async function initializeFCM() {
     if (!messaging) {
       console.log('Messaging not supported');
@@ -772,39 +952,65 @@
     }
 
     try {
+      // Request notification permission
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         console.log('Notification permission granted');
         
+        // Get FCM token
         fcmToken = await messaging.getToken({
           vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-IHI9H-1kQj0azJmrS1ifDZxUl8QaYpu1X0VjU8jT3V8EoWUzr1'
         });
         
-        if (fcmToken && currentUser) {
-          await db.collection('users').doc(currentUser.uid).update({
-            fcmToken: fcmToken,
-            lastTokenUpdate: firebase.firestore.Timestamp.now()
-          });
-          console.log('FCM token updated');
+        if (fcmToken) {
+          console.log('FCM Token:', fcmToken);
+          // Store token in user's document for sending notifications
+          if (currentUser) {
+            await updateUserFCMToken(fcmToken);
+          }
+        } else {
+          console.log('No registration token available');
         }
+      } else {
+        console.log('Notification permission denied');
       }
     } catch (error) {
       console.error('Error initializing FCM:', error);
     }
   }
 
+  // Update user's FCM token in Firestore
+  async function updateUserFCMToken(token) {
+    if (!currentUser) return;
+    
+    try {
+      const userRef = db.collection('users').doc(currentUser.uid);
+      await userRef.update({
+        fcmToken: token,
+        lastTokenUpdate: firebase.firestore.Timestamp.now()
+      });
+      console.log('FCM token updated for user');
+    } catch (error) {
+      console.error('Error updating FCM token:', error);
+    }
+  }
+
   // Listen for foreground messages
   if (messaging) {
     messaging.onMessage((payload) => {
-      console.log('Foreground message:', payload);
+      console.log('Message received in foreground:', payload);
+      
+      // Show notification in app
       const notification = payload.notification;
       if (notification) {
-        showInAppNotification(notification.title, notification.body);
+        // Create in-app notification
+        showInAppNotification(notification.title, notification.body, payload.data);
       }
     });
   }
 
-  function showInAppNotification(title, body) {
+  // Show in-app notification
+  function showInAppNotification(title, body, data) {
     const notificationEl = document.createElement('div');
     notificationEl.style.cssText = `
       position: fixed;
@@ -822,7 +1028,7 @@
     
     notificationEl.innerHTML = `
       <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
-      <div style="color: var(--muted);">${body}</div>
+      <div style="color: var(--muted); margin-bottom: 12px;">${body}</div>
       <button onclick="this.parentElement.remove()" style="
         position: absolute;
         top: 8px;
@@ -836,6 +1042,8 @@
     `;
     
     document.body.appendChild(notificationEl);
+    
+    // Auto remove after 10 seconds
     setTimeout(() => {
       if (notificationEl.parentElement) {
         notificationEl.remove();
@@ -843,7 +1051,47 @@
     }, 10000);
   }
 
-  // Username prompt
+  // Handle join request responses from push notifications
+  async function respondToJoinRequest(reservationId, response) {
+    if (!currentUser) return;
+    
+    try {
+      // Create a join request document
+      const joinRequestData = {
+        reservationId: reservationId,
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        userName: currentUser.displayName || currentUser.email,
+        response: response,
+        timestamp: firebase.firestore.Timestamp.now()
+      };
+      
+      await db.collection('joinRequests').add(joinRequestData);
+      console.log('Join request response recorded:', response);
+      
+      // Show confirmation
+      if (response === 'yes') {
+        alert('Potvrđeno: Dolazim na rezervaciju!');
+      } else {
+        alert('Potvrđeno: Ne dolazim na rezervaciju.');
+      }
+      
+    } catch (error) {
+      console.error('Error responding to join request:', error);
+      alert('Greška pri slanju odgovora. Pokušajte ponovno.');
+    }
+  }
+
+  // Listen for messages from service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data.type === 'respondToJoinRequest') {
+        respondToJoinRequest(event.data.reservationId, event.data.response);
+      }
+    });
+  }
+
+  // ---------- USERNAME MANAGEMENT ----------
   async function promptForUsername(defaultName) {
     return new Promise((resolve) => {
       const modal = document.createElement('div');
@@ -873,7 +1121,7 @@
       
       modalContent.innerHTML = `
         <h3 style="margin: 0 0 16px; color: var(--brand);">Odaberite ime</h3>
-        <p style="margin: 0 0 20px; color: var(--muted);">Kako se želite prikazivati?</p>
+        <p style="margin: 0 0 20px; color: var(--muted);">Kako se želite prikazivati u leaderboardu?</p>
         <input type="text" id="usernameInput" value="${defaultName}" style="
           width: 100%;
           padding: 12px;
@@ -883,15 +1131,17 @@
           margin-bottom: 20px;
           text-align: center;
         " placeholder="Unesite vaše ime">
-        <button id="confirmUsername" style="
-          background: var(--brand);
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 600;
-        ">Potvrdi</button>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button id="confirmUsername" style="
+            background: var(--brand);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+          ">Potvrdi</button>
+        </div>
       `;
       
       modal.appendChild(modalContent);
@@ -913,35 +1163,35 @@
       
       confirmBtn.addEventListener('click', handleConfirm);
       input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleConfirm();
+        if (e.key === 'Enter') {
+          handleConfirm();
+        }
       });
     });
   }
 
-  // Ensure user in Firestore
   async function ensureUserInFirestore(user) {
     if (!user) return;
     const userRef = db.collection('users').doc(user.uid);
     const snapshot = await userRef.get();
 
+    // Always ask for username on first login or if not set
     const savedName = localStorage.getItem('hoops_displayName');
     let chosenName = savedName;
 
     if (!snapshot.exists || !savedName) {
+      // Show a better username prompt
       chosenName = await promptForUsername(user.displayName || user.email || "");
       if (!chosenName) chosenName = user.displayName || user.email || "Unnamed";
       
-      try { 
-        localStorage.setItem('hoops_displayName', chosenName); 
-      } catch(e) { 
-        console.warn('Could not save to localStorage:', e);
-      }
+      // save locally so we don't ask again on this device
+      try { localStorage.setItem('hoops_displayName', chosenName); } catch(e) { /* ignore */ }
 
       const key = slugify(chosenName);
       await userRef.set({
         uid: user.uid,
         email: user.email,
-        name: key,
+        name: key, // keep key in `name` for backward compatibility
         displayName: chosenName,
         key,
         wins: 0,
@@ -949,73 +1199,112 @@
         pointsFor: 0,
         pointsAgainst: 0,
         createdAt: firebase.firestore.Timestamp.now(),
-        fcmToken: null,
+        fcmToken: null, // Will be set when FCM initializes
         lastLogin: firebase.firestore.Timestamp.now()
       });
     } else {
+      // Update last login time
       await userRef.update({
         lastLogin: firebase.firestore.Timestamp.now()
       });
       
+      // Ensure displayName saved locally for future logins on this device
       const data = snapshot.data();
       if (data && data.displayName && !savedName) {
-        try { 
-          localStorage.setItem('hoops_displayName', data.displayName); 
-        } catch(e){}
+        try { localStorage.setItem('hoops_displayName', data.displayName); } catch(e){};
       }
     }
   }
 
-  // Auth flow
+  // ---------- AUTHENTICATION FLOW ----------
+  console.log('Setting up login button handler...');
+  
+  // Google login button click handler
   googleLoginBtn.addEventListener("click", async () => {
+    console.log("Login button clicked!");
     try {
       googleLoginBtn.disabled = true;
       googleLoginBtn.textContent = 'Prijava u tijeku...';
+      console.log("Creating Google auth provider...");
       
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.addScope('email');
       provider.addScope('profile');
       
-      await auth.signInWithPopup(provider);
-    } catch(err) {
-      console.error("Login error", err);
+      console.log("Attempting sign in with popup...");
+      const result = await auth.signInWithPopup(provider);
+      console.log("Sign in successful!", result.user.email);
+    } catch (err) {
+      console.error("Login error:", err);
       googleLoginBtn.disabled = false;
       googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
       
       if (err.code === 'auth/popup-closed-by-user') {
-        console.log("Login popup closed by user");
+        console.log("User closed the login popup");
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        console.log("Popup request was cancelled");
       } else {
         alert("Prijava nije uspjela: " + (err.message || err));
       }
     }
   });
 
+  // Logout button handler
   logoutBtn.addEventListener("click", async () => {
-    await auth.signOut();
+    console.log("Logout button clicked");
+    try {
+      await auth.signOut();
+      console.log("User signed out successfully");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   });
 
-  // Auth state listener
+  // Show loading state while checking auth
   loginLoading.style.display = 'block';
+  console.log("Checking auth state...");
 
+  // Authentication state observer
   auth.onAuthStateChanged(async (user) => {
+    console.log("Auth state changed:", user ? `User logged in: ${user.email}` : "No user logged in");
+    
     if (user) {
+      console.log("User details:", {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName
+      });
+      
       currentUser = user;
       loginWrapper.style.display = "none";
       appRoot.style.display = "block";
       loginLoading.style.display = "none";
-      
+
+      // Update profile button with user info
       updateProfileButton();
 
       try {
+        console.log("Ensuring user in Firestore...");
         await ensureUserInFirestore(user);
+        
+        console.log("Initializing FCM...");
         await initializeFCM();
+        
+        console.log("Starting games listener...");
         startGamesListener();
+        
+        console.log("Loading reservations...");
         await loadReservations();
+        
+        console.log("Rendering calendar...");
         renderCalendar();
+        
+        console.log("App initialization complete!");
       } catch (error) {
         console.error("Error during post-login setup:", error);
       }
     } else {
+      console.log("User logged out, showing login screen");
       currentUser = null;
       loginWrapper.style.display = "flex";
       appRoot.style.display = "none";
@@ -1023,13 +1312,14 @@
       googleLoginBtn.disabled = false;
       googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
       
+      // Cleanup any subscriptions
       if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
       if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
       if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
     }
   });
 
-  // Update profile button
+  // Update profile button with user info
   function updateProfileButton() {
     if (!currentUser) return;
     
@@ -1064,23 +1354,34 @@
     }
   });
 
-  // Load reservations
+  // ---------- CALENDAR FUNCTIONS ----------
   async function loadReservations(){
+    // load all reservations into cache
     reservationsCache = [];
     try {
       if (!isOnline) {
-        console.log('Offline mode');
+        console.log('Offline mode - using cached data');
         return;
       }
       
       const snapshot = await db.collection('reservations').get();
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
+        // keep id and timestamp if exists
         reservationsCache.push({ id: docSnap.id, ...data });
       });
       console.log(`Loaded ${reservationsCache.length} reservations`);
     } catch(err){
       console.error("Error loading reservations", err);
+      // Show user-friendly error message
+      if (formMsg) {
+        if (err.code === 'permission-denied') {
+          formMsg.textContent = "Nemate dozvole za pristup rezervacijama. Kontaktirajte administratora.";
+        } else {
+          formMsg.textContent = "Greška pri učitavanju rezervacija. Provjerite internetsku vezu.";
+        }
+        formMsg.style.color = "#d32f2f";
+      }
       reservationsCache = [];
     }
   }
@@ -1093,11 +1394,11 @@
     });
   }
 
-  // Render calendar
   function renderCalendar(){
     daysGrid.innerHTML = "";
     weekdaysContainer.innerHTML = "";
 
+    // weekdays header
     WEEKDAYS.forEach(w => {
       const wEl = document.createElement("div");
       wEl.className = "weekday";
@@ -1109,9 +1410,10 @@
     const month = visibleMonth;
     monthTitle.textContent = monthYearTitle(year, month);
 
-    const firstWeekday = startOfMonthWeekday(year, month);
+    const firstWeekday = startOfMonthWeekday(year, month); // 0..6 (Monday..Sunday)
     const lastDay = new Date(year, month+1, 0).getDate();
 
+    // render empty slots before first day
     for (let i=0;i<firstWeekday;i++){
       const empty = document.createElement("div");
       empty.className = "day empty";
@@ -1127,6 +1429,7 @@
       dayNum.textContent = d;
       dayEl.appendChild(dayNum);
 
+      // reservations for that day
       const dayRes = reservationsForDay(year, month, d);
 
       const items = document.createElement("div");
@@ -1142,25 +1445,52 @@
         if (dayRes.length>3){
           const more = document.createElement("div");
           more.textContent = `+${dayRes.length-3} više...`;
-          more.style.color = "#666";
+          more.style.color = "#666"; more.style.fontSize="12px";
           items.appendChild(more);
         }
         dayEl.appendChild(items);
       }
 
+      // tooltip with details
+      if (dayRes.length>0){
+        let info = "";
+        dayRes.forEach(r => {
+          const dt = r.timestamp.toDate();
+          const t = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          info += `${r.name} — ${t} — ${r.teren}\n`;
+        });
+        dayEl.setAttribute("data-tooltip", info.trim());
+        // show tooltip on hover via custom element
+        dayEl.addEventListener("mouseenter", (e)=>{
+          const tt = document.createElement("div");
+          tt.className="tooltip";
+          tt.id = "tmpTooltip";
+          tt.textContent = e.currentTarget.getAttribute("data-tooltip");
+          document.body.appendChild(tt);
+          const rect = e.currentTarget.getBoundingClientRect();
+          tt.style.position="absolute";
+          tt.style.left = (rect.left + rect.width/2 - tt.offsetWidth/2) + "px";
+          tt.style.top = (rect.top - tt.offsetHeight - 10) + "px";
+        });
+        dayEl.addEventListener("mouseleave", ()=>{
+          const ttd = document.getElementById("tmpTooltip");
+          if (ttd) ttd.remove();
+        });
+      }
+
+      // status classes
       const slotDate = new Date(year, month, d);
       const slotIsPast = new Date(today.getFullYear(), today.getMonth(), today.getDate()) > slotDate;
-      
-      if (slotIsPast) {
-        dayEl.classList.add("past");
-      } else if (dayRes.length===0) {
-        dayEl.classList.add("available");
-      } else {
+      if (slotIsPast) dayEl.classList.add("past");
+      else if (dayRes.length===0) dayEl.classList.add("available");
+      else {
+        // if any reservation belongs to current user, mark mine
         const mine = dayRes.find(r => r.user === (currentUser && currentUser.email));
         if (mine) dayEl.classList.add("mine");
         else dayEl.classList.add("reserved-other");
       }
 
+      // click behavior
       dayEl.addEventListener("click", () => {
         if (slotIsPast) return;
         selectedDay = new Date(year, month, d);
@@ -1172,24 +1502,25 @@
     }
   }
 
+  // prev / next handlers
   prevMonthBtn.addEventListener("click", () => {
     visibleMonth--;
     if (visibleMonth < 0){ visibleMonth = 11; visibleYear--; }
     renderCalendar();
   });
-
   nextMonthBtn.addEventListener("click", () => {
     visibleMonth++;
     if (visibleMonth > 11){ visibleMonth = 0; visibleYear++; }
     renderCalendar();
   });
 
-  // Reservation form
+  // ---------- RESERVATION FORM SUBMIT ----------
   reservationForm.addEventListener("submit", async (ev) => {
     ev.preventDefault();
-    if (!selectedDay) { formMsg.textContent = "Odaberite datum."; return; }
+    if (!selectedDay) { formMsg.textContent = "Odaberite datum iz kalendara."; return; }
     if (!currentUser) { formMsg.textContent = "Morate biti prijavljeni."; return; }
 
+    // Use stored displayName or currentUser.displayName or email
     const name = localStorage.getItem('hoops_displayName') || currentUser.displayName || currentUser.email || 'Unnamed';
     const timeVal = timeInput.value;
     const teren = terenSelect.value;
@@ -1197,8 +1528,20 @@
     if (!timeVal || !teren){ formMsg.textContent = "Ispunite sva polja."; return; }
     formMsg.textContent = "Spremanje…";
 
+    // combine selectedDay + timeVal into Date
     const [hh,mm] = timeVal.split(":").map(s => parseInt(s,10));
     const dt = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate(), hh, mm);
+
+    // Prevent double booking at same timestamp for same teren (simple check)
+    const clash = reservationsCache.find(r => {
+      if (!r.timestamp) return false;
+      const rdt = r.timestamp.toDate();
+      return Math.abs(rdt.getTime() - dt.getTime()) < (1000*60*60) && r.teren === teren; // 1h window
+    });
+    if (clash){
+      formMsg.textContent = "Postoji rezervacija u istom terminu za odabrani teren.";
+      return;
+    }
 
     try {
       const reservationData = {
@@ -1210,6 +1553,7 @@
       };
 
       const docRef = await db.collection('reservations').add(reservationData);
+      console.log("Reservation created with ID:", docRef.id);
 
       formMsg.textContent = "Rezervirano uspješno!";
       formMsg.style.color = "#10b981";
@@ -1217,16 +1561,24 @@
       selectedDateText.textContent = "—";
       selectedDay = null;
 
-      await loadReservations();
-      renderCalendar();
-
+      // Send notification to all users about new reservation
       const dateStr = formatLocalDate(dt.getFullYear(), dt.getMonth(), dt.getDate());
       const timeStr = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       await notifyAllUsers(`${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`, docRef.id);
 
+      // refresh cache & calendar
+      await loadReservations();
+      renderCalendar();
+
     } catch(err){
-      console.error("Reservation error", err);
-      formMsg.textContent = "Greška pri spremanju.";
+      console.error("Add reservation error", err);
+      if (err.code === 'permission-denied') {
+        formMsg.textContent = "Nemate dozvole za kreiranje rezervacija. Kontaktirajte administratora.";
+      } else if (err.code === 'unavailable') {
+        formMsg.textContent = "Servis trenutno nije dostupan. Pokušajte ponovno.";
+      } else {
+        formMsg.textContent = "Greška pri spremanju. Pokušajte ponovno.";
+      }
       formMsg.style.color = "#d32f2f";
     }
   });
@@ -1239,78 +1591,108 @@
     reservationForm.style.display = "none";
   });
 
-  // Notify all users
+  // Notify all users function
   async function notifyAllUsers(message, reservationId) {
     try {
-      await db.collection('notifications').add({
+      // Create notification document in Firestore for tracking responses
+      const notificationData = {
         message: message,
         reservationId: reservationId,
         createdAt: firebase.firestore.Timestamp.now(),
+        responses: {}, // Will store user responses: {userId: 'yes'/'no'}
         type: 'reservation'
-      });
+      };
+      
+      await db.collection('notifications').add(notificationData);
+      console.log('Notification created for all users');
+      
+      // Also show local notification
+      if (Notification.permission === 'granted') {
+        new Notification('Hoops', {
+          body: message,
+          icon: './assets/icon-192.png',
+          badge: './assets/icon-192.png'
+        });
+      }
     } catch (error) {
       console.error('Error creating notification:', error);
     }
   }
 
-  // Tab navigation
+  // ---------- TAB NAVIGATION ----------
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      // Remove active class from all tabs and content
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
+      // Add active class to clicked tab and corresponding content
       btn.classList.add('active');
       const tabId = btn.dataset.tab + 'Tab';
       document.getElementById(tabId).classList.add('active');
       
+      // Load leaderboard data when leaderboard tab is opened
       if (btn.dataset.tab === 'leaderboard') {
         startLeaderboardRealtime();
       }
+      // Load notifications when notifications tab is opened
       if (btn.dataset.tab === 'notifications') {
         startNotificationsRealtime();
       }
     });
   });
 
-  // Leaderboard
+  // ---------- LEADERBOARD FUNCTIONALITY ----------
   function startLeaderboardRealtime() {
+    // if already listening, detach first
     if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
 
     try {
-      leaderboardUnsub = db.collection('games').onSnapshot(
+      const gamesRef = db.collection('games');
+
+      // Listen to games collection
+      leaderboardUnsub = gamesRef.onSnapshot(
         () => { computeAndRenderLeaderboard(); },
         (error) => {
-          console.error('Leaderboard error:', error);
+          console.error('Leaderboard snapshot error:', error);
+          // Fallback to one-time load if realtime fails
           computeAndRenderLeaderboard();
         }
       );
 
+      // initial compute
       computeAndRenderLeaderboard();
     } catch (error) {
-      console.error('Error starting leaderboard:', error);
+      console.error('Error starting leaderboard realtime:', error);
+      // Fallback to one-time load
       computeAndRenderLeaderboard();
     }
   }
 
   async function computeAndRenderLeaderboard() {
     try {
+      console.log('Computing leaderboard...');
       leaderboardLoading.style.display = '';
       leaderboardTable.style.display = 'none';
       leaderboardEmpty.style.display = 'none';
       leaderboardBody.innerHTML = '';
 
+      // Start with fresh users map - don't pre-populate from users collection
       const usersMap = {};
+
+      // fetch games snapshot and calculate stats from games only
       const gamesSnap = await db.collection('games').get();
       let gameCount = 0;
       
       gamesSnap.forEach(docSnap => {
         const g = docSnap.data();
-        const t1Key = (g.team1 || '').toString().toLowerCase().trim();
-        const t2Key = (g.team2 || '').toString().toLowerCase().trim();
+        const t1Key = (g.team1 || g.team1Key || '').toString().toLowerCase();
+        const t2Key = (g.team2 || g.team2Key || '').toString().toLowerCase();
           
         if (!t1Key || !t2Key) return;
         gameCount++;
           
+        // Initialize players if they don't exist
         if (!usersMap[t1Key]) {
           usersMap[t1Key] = { 
             key: t1Key, 
@@ -1332,11 +1714,13 @@
           };
         }
           
+        // Add points from this game
         usersMap[t1Key].pointsFor += (g.score1 || 0);
         usersMap[t1Key].pointsAgainst += (g.score2 || 0);
         usersMap[t2Key].pointsFor += (g.score2 || 0);
         usersMap[t2Key].pointsAgainst += (g.score1 || 0);
           
+        // Add wins/losses
         if ((g.score1 || 0) > (g.score2 || 0)) { 
           usersMap[t1Key].wins += 1; 
           usersMap[t2Key].losses += 1; 
@@ -1350,9 +1734,11 @@
         
       if (gameCount === 0) { 
         leaderboardEmpty.style.display = '';
+        leaderboardEmpty.textContent = 'Nema odigranih igara za prikaz.';
         return; 
       }
 
+      // Convert to array and sort by wins, then point difference
       const arr = Object.values(usersMap);
       arr.sort((a,b) => { 
         if ((b.wins||0) !== (a.wins||0)) return (b.wins||0)-(a.wins||0); 
@@ -1390,15 +1776,22 @@
       });
 
       leaderboardTable.style.display = 'table';
+      console.log('Leaderboard rendered with', arr.length, 'players');
     } catch (error) {
       console.error('Error loading leaderboard:', error);
       leaderboardLoading.style.display = 'none';
       leaderboardEmpty.style.display = '';
+      if (error.code === 'permission-denied') {
+        leaderboardEmpty.textContent = 'Nemate dozvole za pristup leaderboardu. Kontaktirajte administratora.';
+      } else {
+        leaderboardEmpty.textContent = 'Greška pri učitavanju leaderboarda.';
+      }
     }
   }
 
-  // Notifications
+  // ---------- NOTIFICATIONS FUNCTIONALITY ----------
   function startNotificationsRealtime() {
+    // if already listening, detach first
     if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
 
     try {
@@ -1408,15 +1801,17 @@
         .onSnapshot(
           (snapshot) => { renderNotifications(snapshot); },
           (error) => {
-            console.error('Notifications error:', error);
+            console.error('Notifications snapshot error:', error);
             notificationsLoading.style.display = 'none';
             notificationsEmpty.style.display = '';
+            notificationsEmpty.textContent = 'Greška pri učitavanju obavještenja.';
           }
         );
     } catch (error) {
-      console.error('Error starting notifications:', error);
+      console.error('Error starting notifications realtime:', error);
       notificationsLoading.style.display = 'none';
       notificationsEmpty.style.display = '';
+      notificationsEmpty.textContent = 'Greška pri učitavanju obavještenja.';
     }
   }
 
@@ -1427,6 +1822,7 @@
 
     if (snapshot.empty) {
       notificationsEmpty.style.display = '';
+      notificationsEmpty.textContent = 'Nema obavještenja.';
       return;
     }
 
@@ -1451,8 +1847,12 @@
       const dateStr = date ? date.toLocaleString('hr-HR') : 'Nepoznato';
 
       notificationEl.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 4px;">${notification.message}</div>
-        <div class="small">${dateStr}</div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <div style="font-weight: 600; margin-bottom: 4px;">${notification.message}</div>
+            <div class="small" style="color: var(--muted);">${dateStr}</div>
+          </div>
+        </div>
       `;
 
       notificationsList.appendChild(notificationEl);
@@ -1461,45 +1861,88 @@
     notificationsList.style.display = 'block';
   }
 
-  // Games listener
+  // ---------- GAMES LISTENER FOR NOTIFICATIONS ----------
   function startGamesListener() {
     if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
     
     try {
-      gamesUnsub = db.collection('games')
-        .orderBy('createdAt', 'desc')
-        .limit(1)
-        .onSnapshot((snapshot) => {
-          snapshot.docChanges().forEach(change => {
-            if (change.type === 'added') {
-              const game = change.doc.data();
+      const gamesRef = db.collection('games');
+      
+      gamesUnsub = gamesRef.orderBy('createdAt', 'desc').limit(1).onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            const game = change.doc.data();
+            const gameId = change.doc.id;
+            
+            // Don't notify for the first load
+            if (game.createdAt && game.createdAt.toDate) {
+              const gameTime = game.createdAt.toDate();
+              const now = new Date();
+              const timeDiff = now.getTime() - gameTime.getTime();
               
-              if (game.createdAt && game.createdAt.toDate) {
-                const gameTime = game.createdAt.toDate();
-                const now = new Date();
-                const timeDiff = now.getTime() - gameTime.getTime();
-                
-                if (timeDiff < 30000) {
-                  const team1 = game.team1Display || game.team1;
-                  const team2 = game.team2Display || game.team2;
-                  const message = `Nova igra: ${team1} vs ${team2} (${game.score1}-${game.score2})`;
-                  showInAppNotification('Hoops', message);
-                }
+              // Only notify if the game was created in the last 30 seconds
+              if (timeDiff < 30000) {
+                notifyNewGame(game, gameId);
               }
             }
-          });
+          }
         });
+      }, (error) => {
+        console.error('Games listener error:', error);
+      });
     } catch (error) {
       console.error('Error starting games listener:', error);
     }
   }
 
-  // Profile modal
+  // Notify about new game
+  async function notifyNewGame(game, gameId) {
+    try {
+      const team1Display = game.team1Display || game.team1 || 'Player 1';
+      const team2Display = game.team2Display || game.team2 || 'Player 2';
+      const score1 = game.score1 || 0;
+      const score2 = game.score2 || 0;
+      
+      const message = `Nova igra: ${team1Display} vs ${team2Display} (${score1}-${score2})`;
+      
+      // Create notification document
+      const notificationData = {
+        message: message,
+        gameId: gameId,
+        createdAt: firebase.firestore.Timestamp.now(),
+        responses: {},
+        type: 'game'
+      };
+      
+      await db.collection('notifications').add(notificationData);
+      console.log('Game notification created');
+      
+      // Show local notification
+      if (Notification.permission === 'granted') {
+        new Notification('Hoops', {
+          body: message,
+          icon: './assets/icon-192.png'
+        });
+      }
+      
+      // Show in-app notification
+      showInAppNotification('Hoops', message);
+      
+    } catch (error) {
+      console.error('Error creating game notification:', error);
+    }
+  }
+
+  // ---------- PROFILE MODAL ----------
   function openProfileModal(userKey, isOwnProfile) {
+    // cleanup any previous subs
+    if (profileUnsub1) { profileUnsub1(); profileUnsub1 = null; }
+    if (profileUnsub2) { profileUnsub2(); profileUnsub2 = null; }
     modalContent.innerHTML = '<div class="small">Učitavanje...</div>'; 
     modalBackdrop.style.display = 'flex';
 
-    const header = document.createElement('div');
+    // create elements
+    const header = document.createElement('div'); 
     const avatarLarge = document.createElement('div');
     avatarLarge.className = 'profile-avatar-large';
     
@@ -1509,7 +1952,7 @@
     nameH.style.textAlign = 'center';
     nameH.style.margin = '0 0 8px';
     
-    const statsRow = document.createElement('div');
+    const statsRow = document.createElement('div'); 
     statsRow.className = 'profile-stats';
     statsRow.innerHTML = `
       <div class="stat-box">
@@ -1530,25 +1973,25 @@
     gamesTitle.textContent = 'Recent Games';
     gamesTitle.style.margin = '20px 0 12px';
     
-    const gamesContainer = document.createElement('div');
-    gamesContainer.id = 'modalGames';
-    gamesContainer.className = 'small';
-    gamesContainer.textContent = 'Učitavanje...';
+    const gamesContainer = document.createElement('div'); 
+    gamesContainer.id = 'modalGames'; 
+    gamesContainer.className = 'small'; 
+    gamesContainer.textContent='Učitavanje...';
 
     header.appendChild(avatarLarge);
     header.appendChild(nameH);
     
-    modalContent.innerHTML = '';
-    modalContent.appendChild(header);
-    modalContent.appendChild(statsRow);
+    modalContent.innerHTML = ''; 
+    modalContent.appendChild(header); 
+    modalContent.appendChild(statsRow); 
     modalContent.appendChild(gamesTitle);
     modalContent.appendChild(gamesContainer);
 
-    // Load user data
+    // Try to lookup display name from users collection (one-time)
     (async ()=>{
       try{
-        const q = await db.collection('users').where('key','==', userKey).limit(1).get();
-        
+        const usersRef = db.collection('users');
+        const q = await usersRef.where('key','==', userKey).limit(1).get();
         if (!q.empty) {
           const u = q.docs[0].data();
           const displayName = u.displayName || u.name || userKey;
@@ -1566,116 +2009,125 @@
         }
       } catch(e){ 
         console.warn('User lookup failed', e); 
+        const initials = userKey.substring(0, 2).toUpperCase();
+        avatarLarge.textContent = initials;
       }
     })();
 
-    // Load games
+    // real-time listen for games where team1==userKey or team2==userKey and merge results
+    const gamesRef = db.collection('games');
+    
     const gamesMap = new Map();
 
     function renderModalGames() {
-      const arr = Array.from(gamesMap.values()).sort((a,b)=>{
-        const da = a.createdAt?.toDate?.() || new Date(a.createdAt);
-        const dbt = b.createdAt?.toDate?.() || new Date(b.createdAt);
-        return dbt - da;
+      const arr = Array.from(gamesMap.values()).sort((a,b)=>{ 
+        const da = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : (a.createdAt? new Date(a.createdAt).getTime():0); 
+        const dbt = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : (b.createdAt? new Date(b.createdAt).getTime():0); 
+        return dbt-da; 
       }).slice(0, 10);
       
       if (arr.length===0) { 
-        gamesContainer.textContent = 'Nema odigranih igara.'; 
+        gamesContainer.textContent = 'Nema odigranih igara za prikaz.'; 
         document.getElementById('modalWins').textContent='0'; 
         document.getElementById('modalLosses').textContent='0'; 
         document.getElementById('modalDiff').textContent='0'; 
         return; 
       }
       
+      // compute stats
       let wins=0, losses=0, pf=0, pa=0;
-      const table = document.createElement('table');
-      table.style.width='100%';
+      const table = document.createElement('table'); 
+      table.style.width='100%'; 
       table.style.marginTop='8px';
-      table.innerHTML = '<thead><tr><th>Date</th><th>Opponent</th><th>Score</th><th>Result</th></tr></thead>';
+      table.innerHTML = '<thead><tr><th>Date</th><th>Opponent</th><th>Score</th><th>Result</th></tr></thead>'; 
       const tbody=document.createElement('tbody');
       
-      arr.forEach(g=>{
-        const t1 = (g.team1||'').toString().toLowerCase();
-        const t2 = (g.team2||'').toString().toLowerCase();
-        const team1Display = g.team1Display||g.team1||t1;
-        const team2Display = g.team2Display||g.team2||t2;
-        const score1=g.score1||0;
-        const score2=g.score2||0;
-        const dateVal = g.createdAt?.toDate?.() || new Date(g.createdAt);
-        const dateStr = dateVal.toLocaleString([], {dateStyle:'short', timeStyle:'short'});
+      arr.forEach(g=>{ 
+        const t1 = (g.team1||'').toString().toLowerCase(); 
+        const t2 = (g.team2||'').toString().toLowerCase(); 
+        const team1Display = g.team1Display||g.team1||t1; 
+        const team2Display = g.team2Display||g.team2||t2; 
+        const score1=g.score1||0; 
+        const score2=g.score2||0; 
+        const dateVal = g.createdAt && g.createdAt.toDate ? g.createdAt.toDate() : (g.createdAt? new Date(g.createdAt): null); 
+        const dateStr = dateVal? dateVal.toLocaleString([], {dateStyle:'short', timeStyle:'short'}): '—'; 
         
-        let myScore, oppScore, oppName;
-        if (t1===userKey){
-          myScore=score1;
-          oppScore=score2;
-          oppName=team2Display;
-        } else {
-          myScore=score2;
-          oppScore=score1;
-          oppName=team1Display;
-        }
+        let myScore, oppScore, oppName; 
+        if (t1===userKey){ 
+          myScore=score1; 
+          oppScore=score2; 
+          oppName=team2Display; 
+        } else { 
+          myScore=score2; 
+          oppScore=score1; 
+          oppName=team1Display; 
+        } 
         
-        pf+=myScore;
-        pa+=oppScore;
+        pf+=myScore; 
+        pa+=oppScore; 
         
-        let result='';
-        if (myScore>oppScore){
-          wins++;
-          result='<span style="color:var(--success);font-weight:600">W</span>';
-        } else if (myScore<oppScore){
-          losses++;
-          result='<span style="color:var(--error);font-weight:600">L</span>';
+        let result=''; 
+        if (myScore>oppScore){ 
+          wins++; 
+          result='<span style="color:var(--success);font-weight:600">W</span>'; 
+        } else if (myScore<oppScore){ 
+          losses++; 
+          result='<span style="color:var(--error);font-weight:600">L</span>'; 
         } else {
           result='<span style="color:var(--muted)">D</span>';
         }
         
-        const tr=document.createElement('tr');
-        tr.innerHTML = `<td>${dateStr}</td><td>${oppName}</td><td>${myScore} — ${oppScore}</td><td style="text-align:center">${result}</td>`;
-        tbody.appendChild(tr);
-      });
+        const tr=document.createElement('tr'); 
+        tr.innerHTML = `<td>${dateStr}</td><td>${oppName}</td><td>${myScore} — ${oppScore}</td><td style="text-align:center">${result}</td>`; 
+        tbody.appendChild(tr); 
+      }); 
       
-      table.appendChild(tbody);
-      gamesContainer.innerHTML='';
-      gamesContainer.appendChild(table);
+      table.appendChild(tbody); 
+      gamesContainer.innerHTML=''; 
+      gamesContainer.appendChild(table); 
       
-      document.getElementById('modalWins').textContent=String(wins);
-      document.getElementById('modalLosses').textContent=String(losses);
-      document.getElementById('modalDiff').textContent=String(pf-pa);
+      document.getElementById('modalWins').textContent=String(wins); 
+      document.getElementById('modalLosses').textContent=String(losses); 
+      document.getElementById('modalDiff').textContent=String(pf-pa); 
     }
 
-    db.collection('games').where('team1', '==', userKey).orderBy('createdAt','desc').limit(10)
-      .onSnapshot(snap => {
-        snap.docChanges().forEach(ch=>{
-          if (ch.type==='removed') gamesMap.delete(ch.doc.id);
-          else gamesMap.set(ch.doc.id, ch.doc.data());
-        });
-        renderModalGames();
-      });
+    profileUnsub1 = gamesRef.where('team1', '==', userKey).orderBy('createdAt','desc').limit(10).onSnapshot(snap => { 
+      snap.docChanges().forEach(ch=>{ 
+        if (ch.type==='removed') gamesMap.delete(ch.doc.id); 
+        else gamesMap.set(ch.doc.id, ch.doc.data()); 
+      }); 
+      renderModalGames(); 
+    });
     
-    db.collection('games').where('team2', '==', userKey).orderBy('createdAt','desc').limit(10)
-      .onSnapshot(snap => {
-        snap.docChanges().forEach(ch=>{
-          if (ch.type==='removed') gamesMap.delete(ch.doc.id);
-          else gamesMap.set(ch.doc.id, ch.doc.data());
-        });
-        renderModalGames();
-      });
+    profileUnsub2 = gamesRef.where('team2', '==', userKey).orderBy('createdAt','desc').limit(10).onSnapshot(snap => { 
+      snap.docChanges().forEach(ch=>{ 
+        if (ch.type==='removed') gamesMap.delete(ch.doc.id); 
+        else gamesMap.set(ch.doc.id, ch.doc.data()); 
+      }); 
+      renderModalGames(); 
+    });
   }
 
-  modalClose.addEventListener('click', () => {
-    modalBackdrop.style.display = 'none';
+  // close modal handler
+  modalClose.addEventListener('click', () => { 
+    modalBackdrop.style.display = 'none'; 
+    modalContent.innerHTML=''; 
+    if (profileUnsub1) { profileUnsub1(); profileUnsub1=null; } 
+    if (profileUnsub2) { profileUnsub2(); profileUnsub2=null; } 
+  });
+  
+  modalBackdrop.addEventListener('click', (e)=>{ 
+    if (e.target===modalBackdrop){ 
+      modalClose.click(); 
+    } 
   });
 
-  modalBackdrop.addEventListener('click', (e)=>{
-    if (e.target===modalBackdrop){
-      modalClose.click();
-    }
-  });
-
-  // Network status
+  // ---------- NETWORK STATUS HANDLING ----------
   window.addEventListener('online', () => {
     isOnline = true;
+    console.log('Connection restored');
     offlineIndicator.style.display = 'none';
+    // Reload data when back online
     if (currentUser) {
       loadReservations().then(() => renderCalendar());
     }
@@ -1683,10 +2135,11 @@
 
   window.addEventListener('offline', () => {
     isOnline = false;
+    console.log('Connection lost - working offline');
     offlineIndicator.style.display = 'block';
   });
 
-  // PWA install
+  // ---------- PWA INSTALL FUNCTIONALITY ----------
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -1697,57 +2150,104 @@
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      console.log(`PWA install: ${outcome}`);
+      console.log(`PWA install outcome: ${outcome}`);
       deferredPrompt = null;
       installBtn.style.display = 'none';
     }
   });
 
-  // Service Worker
+  // Hide install button if app is already installed
+  window.addEventListener('appinstalled', () => {
+    installBtn.style.display = 'none';
+    console.log('PWA was installed');
+  });
+
+  // Request notification permission on first load
+  if (notificationPermission === 'default') {
+    Notification.requestPermission().then(permission => {
+      notificationPermission = permission;
+      console.log('Notification permission:', permission);
+    });
+  }
+
+  // ---------- SERVICE WORKER REGISTRATION ----------
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       // Register main service worker
       navigator.serviceWorker.register('./service-worker.js')
         .then(reg => {
-          console.log('SW registered');
+          console.log('Service Worker registered successfully:', reg);
           
           // Check for updates every 60 seconds
-          setInterval(() => reg.update(), 60000);
+          setInterval(() => {
+            reg.update();
+          }, 60000);
           
+          // Also check on focus (when user returns to app)
+          window.addEventListener('focus', () => {
+            reg.update();
+          });
+          
+          // Listen for updates
           reg.addEventListener('updatefound', () => {
-            const newSW = reg.installing;
-            newSW.addEventListener('statechange', () => {
-              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                showUpdateBanner();
+            const newServiceWorker = reg.installing;
+            newServiceWorker.addEventListener('statechange', () => {
+              if (newServiceWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  // New service worker is available
+                  showUpdateNotification();
+                } else {
+                  // First time installation
+                  console.log('Service Worker installed for the first time');
+                }
               }
             });
           });
+          
+          // Listen for controller change (when new SW takes control)
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('New service worker is controlling the page');
+            // Force reload to get the latest version
+            window.location.reload();
+          });
         })
-        .catch(err => console.error('SW registration failed:', err));
+        .catch(err => {
+          console.error('Service Worker registration failed:', err);
+          console.warn('PWA features may not work properly. Please check your internet connection.');
+        });
       
       // Register Firebase messaging service worker
       navigator.serviceWorker.register('./firebase-messaging-sw.js')
         .then(reg => {
-          console.log('Firebase SW registered');
+          console.log('Firebase Messaging Service Worker registered:', reg);
         })
-        .catch(err => console.error('Firebase SW registration failed:', err));
+        .catch(err => {
+          console.error('Firebase Messaging Service Worker registration failed:', err);
+        });
     });
+  } else {
+    console.warn('Service Workers not supported in this browser');
   }
 
-  function showUpdateBanner() {
-    const banner = document.createElement('div');
-    banner.className = 'update-banner';
-    banner.style.display = 'flex';
-    banner.innerHTML = `
+  // Show update notification
+  function showUpdateNotification() {
+    const updateBanner = document.createElement('div');
+    updateBanner.className = 'update-banner';
+    updateBanner.style.display = 'flex';
+    updateBanner.innerHTML = `
       <span>🔄 Nova verzija dostupna!</span>
-      <button id="updateNowBtn">Ažuriraj</button>
+      <button id="updateNowBtn">Ažuriraj Sada</button>
     `;
-    document.body.appendChild(banner);
+    document.body.appendChild(updateBanner);
     
     document.getElementById('updateNowBtn').addEventListener('click', () => {
+      console.log('User clicked update button');
+      // Reload to get new version
       window.location.reload();
     });
   }
+
+  console.log('All event listeners registered. App ready!');
 </script>
 </body>
 </html>
