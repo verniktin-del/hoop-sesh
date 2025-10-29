@@ -13,6 +13,12 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="icon" href="assets/icon-192.png">
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
   <style>
     :root{
       --brand:#1D428A;
@@ -39,7 +45,6 @@
       line-height:1.6;
     }
 
-    /* Centered login */
     #loginWrapper{
       min-height:100vh;
       display:flex;
@@ -57,17 +62,12 @@
       box-shadow:var(--shadow-lg);
       text-align:center;
       border:1px solid var(--border);
-      backdrop-filter:blur(10px);
     }
     #loginBox h1{
       margin:0 0 8px;
       font-size:28px;
       color:var(--brand);
       font-weight:700;
-      background:var(--gradient);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
     }
     #loginBox p{
       margin:0 0 32px;
@@ -102,7 +102,6 @@
     }
     #googleLoginBtn img{width:20px;height:20px}
 
-    /* App layout */
     #app{
       display:none;
       max-width:100vw;
@@ -138,10 +137,6 @@
       color:var(--brand);
       font-size:24px;
       font-weight:700;
-      background:var(--gradient);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
     }
     .userBar{
       display:flex;
@@ -192,7 +187,6 @@
       transform:translateY(-1px);
     }
 
-    /* Main content */
     .main{
       display:flex;
       gap:16px;
@@ -296,7 +290,6 @@
     .reserved-other{background:linear-gradient(90deg,#fff4e0,#fff8f0)}
     .past{opacity:0.5;pointer-events:none}
 
-    /* right panel - form */
     .formCard{
       background:var(--card);
       border-radius:12px;
@@ -326,7 +319,6 @@
 
     .small{font-size:13px;color:var(--muted)}
 
-    /* Leaderboard styles */
     .leaderboard-container{
       width:100%;
       overflow-x:auto;
@@ -375,7 +367,6 @@
       text-decoration:underline;
     }
 
-    /* Modal styles */
     .modal-backdrop{
       position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center;z-index:1500;
     }
@@ -383,7 +374,6 @@
     .modal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
     .closeBtn{background:#eee;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
 
-    /* Profile modal specific */
     .profile-avatar-large{
       width:80px;
       height:80px;
@@ -420,7 +410,6 @@
       margin-top:4px;
     }
 
-    /* Offline indicator */
     .offline-indicator{
       position:fixed;
       top:0;
@@ -435,7 +424,6 @@
       display:none;
     }
 
-    /* PWA Install button */
     .install-btn{
       background:var(--accent);
       color:var(--brand);
@@ -448,7 +436,6 @@
       display:none;
     }
 
-    /* Tab navigation */
     .tab-nav{
       display:flex;
       gap:4px;
@@ -484,7 +471,6 @@
       display:block;
     }
 
-    /* Update banner */
     .update-banner{
       position:fixed;
       top:0;
@@ -541,1115 +527,6 @@
       }
     }
   </style>
-  
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { 
-    getAuth, 
-    onAuthStateChanged, 
-    GoogleAuthProvider, 
-    signInWithPopup, 
-    signOut,
-    setPersistence,
-    browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-  import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    getDocs, 
-    updateDoc, 
-    doc, 
-    setDoc, 
-    getDoc, 
-    Timestamp, 
-    query, 
-    where, 
-    orderBy, 
-    onSnapshot, 
-    limit 
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-  import { 
-    getMessaging, 
-    getToken, 
-    onMessage 
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAnFYrebR69a2rmYeT-TWrX1RB_Tzsh3Tk",
-    authDomain: "hoops-165ec.firebaseapp.com",
-    projectId: "hoops-165ec",
-    storageBucket: "hoops-165ec.firebasestorage.app",
-    messagingSenderId: "563400604791",
-    appId: "1:563400604791:web:50183bcf65de09bd019a72",
-    measurementId: "G-C3YPHXZCXN"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  let messaging = null;
-
-  // Set persistence to LOCAL (browser restart will keep user logged in)
-  setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      console.log('Auth persistence set to LOCAL');
-    })
-    .catch((error) => {
-      console.error('Error setting persistence:', error);
-    });
-
-  // Initialize messaging only if supported
-  try {
-    messaging = getMessaging(app);
-  } catch (error) {
-    console.warn('Firebase Messaging not supported:', error);
-  }
-
-  // DOM refs
-  const loginWrapper = document.getElementById("loginWrapper");
-  const googleLoginBtn = document.getElementById("googleLoginBtn");
-  const loginLoading = document.getElementById("loginLoading");
-
-  const appRoot = document.getElementById("app");
-  const profileBtn = document.getElementById("profileBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const installBtn = document.getElementById("installBtn");
-
-  const weekdaysContainer = document.getElementById("weekdays");
-  const daysGrid = document.getElementById("daysGrid");
-  const monthTitle = document.getElementById("monthTitle");
-  const prevMonthBtn = document.getElementById("prevMonth");
-  const nextMonthBtn = document.getElementById("nextMonth");
-
-  const reservationForm = document.getElementById("reservationForm");
-  const timeInput = document.getElementById("timeInput");
-  const terenSelect = document.getElementById("terenSelect");
-  const selectedDateText = document.getElementById("selectedDateText");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const formMsg = document.getElementById("formMsg");
-
-  const leaderboardBody = document.getElementById("leaderboardBody");
-  const leaderboardTable = document.getElementById("leaderboardTable");
-  const leaderboardLoading = document.getElementById("leaderboardLoading");
-  const leaderboardEmpty = document.getElementById("leaderboardEmpty");
-
-  const notificationsList = document.getElementById("notificationsList");
-  const notificationsLoading = document.getElementById("notificationsLoading");
-  const notificationsEmpty = document.getElementById("notificationsEmpty");
-
-  const modalBackdrop = document.getElementById("modalBackdrop");
-  const modalContent = document.getElementById("modalContent");
-  const modalClose = document.getElementById("modalClose");
-
-  const offlineIndicator = document.getElementById('offlineIndicator');
-
-  // State
-  let currentUser = null;
-  let visibleYear = (new Date()).getFullYear();
-  let visibleMonth = (new Date()).getMonth();
-  let selectedDay = null;
-  let reservationsCache = [];
-  let isOnline = navigator.onLine;
-  let fcmToken = null;
-  let leaderboardUnsub = null;
-  let notificationsUnsub = null;
-  let gamesUnsub = null;
-  let deferredPrompt;
-
-  const WEEKDAYS = ["Pon","Uto","Sri","Čet","Pet","Sub","Ned"];
-
-  // Utility functions
-  function slugify(s) {
-    return (s || '').toString().trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g,'');
-  }
-
-  function monthYearTitle(year, month) {
-    return new Date(year, month, 1).toLocaleString('hr-HR', { month: 'long', year: 'numeric' });
-  }
-
-  function startOfMonthWeekday(year, month) {
-    const jsDay = new Date(year, month, 1).getDay();
-    return (jsDay === 0) ? 6 : jsDay - 1;
-  }
-
-  function formatLocalDate(y,m,d){
-    return `${String(d).padStart(2,'0')}.${String(m+1).padStart(2,'0')}.${y}`;
-  }
-
-  // Initialize FCM
-  async function initializeFCM() {
-    if (!messaging) {
-      console.log('Messaging not supported');
-      return;
-    }
-
-    try {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        console.log('Notification permission granted');
-        
-        fcmToken = await getToken(messaging, {
-          vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-IHI9H-1kQj0azJmrS1ifDZxUl8QaYpu1X0VjU8jT3V8EoWUzr1'
-        });
-        
-        if (fcmToken && currentUser) {
-          const userRef = doc(db, 'users', currentUser.uid);
-          await updateDoc(userRef, {
-            fcmToken: fcmToken,
-            lastTokenUpdate: Timestamp.now()
-          });
-          console.log('FCM token updated');
-        }
-      }
-    } catch (error) {
-      console.error('Error initializing FCM:', error);
-    }
-  }
-
-  // Listen for foreground messages
-  if (messaging) {
-    onMessage(messaging, (payload) => {
-      console.log('Foreground message:', payload);
-      const notification = payload.notification;
-      if (notification) {
-        showInAppNotification(notification.title, notification.body);
-      }
-    });
-  }
-
-  function showInAppNotification(title, body) {
-    const notificationEl = document.createElement('div');
-    notificationEl.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: var(--shadow-lg);
-      z-index: 10000;
-      max-width: 300px;
-      animation: slideIn 0.3s ease-out;
-    `;
-    
-    notificationEl.innerHTML = `
-      <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
-      <div style="color: var(--muted);">${body}</div>
-      <button onclick="this.parentElement.remove()" style="
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: none;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        color: var(--muted);
-      ">×</button>
-    `;
-    
-    document.body.appendChild(notificationEl);
-    setTimeout(() => notificationEl.remove(), 10000);
-  }
-
-  // Username prompt
-  async function promptForUsername(defaultName) {
-    return new Promise((resolve) => {
-      const modal = document.createElement('div');
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      `;
-      
-      const modalContent = document.createElement('div');
-      modalContent.style.cssText = `
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      `;
-      
-      modalContent.innerHTML = `
-        <h3 style="margin: 0 0 16px; color: var(--brand);">Odaberite ime</h3>
-        <p style="margin: 0 0 20px; color: var(--muted);">Kako se želite prikazivati?</p>
-        <input type="text" id="usernameInput" value="${defaultName}" style="
-          width: 100%;
-          padding: 12px;
-          border: 2px solid var(--border);
-          border-radius: 8px;
-          font-size: 16px;
-          margin-bottom: 20px;
-          text-align: center;
-        " placeholder="Unesite vaše ime">
-        <button id="confirmUsername" style="
-          background: var(--brand);
-          color: white;
-          border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 600;
-        ">Potvrdi</button>
-      `;
-      
-      modal.appendChild(modalContent);
-      document.body.appendChild(modal);
-      
-      const input = modalContent.querySelector('#usernameInput');
-      const confirmBtn = modalContent.querySelector('#confirmUsername');
-      
-      input.focus();
-      input.select();
-      
-      const handleConfirm = () => {
-        const username = input.value.trim();
-        if (username) {
-          document.body.removeChild(modal);
-          resolve(username);
-        }
-      };
-      
-      confirmBtn.addEventListener('click', handleConfirm);
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') handleConfirm();
-      });
-    });
-  }
-
-  // Ensure user in Firestore
-  async function ensureUserInFirestore(user) {
-    if (!user) return;
-    const userRef = doc(db, "users", user.uid);
-    const snapshot = await getDoc(userRef);
-
-    const savedName = localStorage.getItem('hoops_displayName');
-    let chosenName = savedName;
-
-    if (!snapshot.exists() || !savedName) {
-      chosenName = await promptForUsername(user.displayName || user.email || "");
-      if (!chosenName) chosenName = user.displayName || user.email || "Unnamed";
-      
-      try { 
-        localStorage.setItem('hoops_displayName', chosenName); 
-      } catch(e) { 
-        console.warn('Could not save to localStorage:', e);
-      }
-
-      const key = slugify(chosenName);
-      await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email,
-        name: key,
-        displayName: chosenName,
-        key,
-        wins: 0,
-        losses: 0,
-        pointsFor: 0,
-        pointsAgainst: 0,
-        createdAt: Timestamp.now(),
-        fcmToken: null,
-        lastLogin: Timestamp.now()
-      });
-    } else {
-      await updateDoc(userRef, {
-        lastLogin: Timestamp.now()
-      });
-      
-      const data = snapshot.data();
-      if (data && data.displayName && !savedName) {
-        try { 
-          localStorage.setItem('hoops_displayName', data.displayName); 
-        } catch(e){}
-      }
-    }
-  }
-
-  // Auth flow
-  googleLoginBtn.addEventListener("click", async () => {
-    try {
-      googleLoginBtn.disabled = true;
-      googleLoginBtn.textContent = 'Prijava u tijeku...';
-      
-      const provider = new GoogleAuthProvider();
-      provider.addScope('email');
-      provider.addScope('profile');
-      
-      await signInWithPopup(auth, provider);
-    } catch(err) {
-      console.error("Login error", err);
-      googleLoginBtn.disabled = false;
-      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
-      alert("Prijava nije uspjela: " + (err.message || err));
-    }
-  });
-
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
-  });
-
-  // Auth state listener
-  loginLoading.style.display = 'block';
-
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      currentUser = user;
-      loginWrapper.style.display = "none";
-      appRoot.style.display = "block";
-      
-      // Update profile button
-      updateProfileButton();
-
-      try {
-        await ensureUserInFirestore(user);
-        await initializeFCM();
-        startGamesListener();
-        await loadReservations();
-        renderCalendar();
-      } catch (error) {
-        console.error("Error during post-login setup:", error);
-      }
-    } else {
-      currentUser = null;
-      loginWrapper.style.display = "flex";
-      appRoot.style.display = "none";
-      loginLoading.style.display = "none";
-      googleLoginBtn.disabled = false;
-      
-      if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
-      if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
-      if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
-    }
-  });
-
-  // Update profile button with user info
-  function updateProfileButton() {
-    if (!currentUser) return;
-    
-    const displayName = localStorage.getItem('hoops_displayName') || 
-                       currentUser.displayName || 
-                       currentUser.email || 
-                       'User';
-    
-    const initials = displayName.split(' ')
-      .map(n => n[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
-    
-    const avatar = profileBtn.querySelector('.profileAvatar');
-    avatar.textContent = initials;
-    
-    const nameSpan = profileBtn.querySelector('.profileName');
-    nameSpan.textContent = displayName.split(' ')[0];
-  }
-
-  // Open own profile
-  profileBtn.addEventListener('click', async () => {
-    if (!currentUser) return;
-    
-    const userRef = doc(db, 'users', currentUser.uid);
-    const userDoc = await getDoc(userRef);
-    
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      openProfileModal(userData.key, true);
-    }
-  });
-
-  // Load reservations
-  async function loadReservations(){
-    reservationsCache = [];
-    try {
-      if (!isOnline) {
-        console.log('Offline mode');
-        return;
-      }
-      
-      const snapshot = await getDocs(collection(db,"reservations"));
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        reservationsCache.push({ id: docSnap.id, ...data });
-      });
-      console.log(`Loaded ${reservationsCache.length} reservations`);
-    } catch(err){
-      console.error("Error loading reservations", err);
-      reservationsCache = [];
-    }
-  }
-
-  function reservationsForDay(year,month,day){
-    return reservationsCache.filter(r => {
-      if (!r.timestamp) return false;
-      const dt = ('toDate' in r.timestamp) ? r.timestamp.toDate() : new Date(r.timestamp.seconds*1000);
-      return dt.getFullYear()===year && dt.getMonth()===month && dt.getDate()===day;
-    });
-  }
-
-  // Render calendar
-  function renderCalendar(){
-    daysGrid.innerHTML = "";
-    weekdaysContainer.innerHTML = "";
-
-    WEEKDAYS.forEach(w => {
-      const wEl = document.createElement("div");
-      wEl.className = "weekday";
-      wEl.textContent = w;
-      weekdaysContainer.appendChild(wEl);
-    });
-
-    const year = visibleYear;
-    const month = visibleMonth;
-    monthTitle.textContent = monthYearTitle(year, month);
-
-    const firstWeekday = startOfMonthWeekday(year, month);
-    const lastDay = new Date(year, month+1, 0).getDate();
-
-    for (let i=0;i<firstWeekday;i++){
-      const empty = document.createElement("div");
-      empty.className = "day empty";
-      daysGrid.appendChild(empty);
-    }
-
-    const today = new Date();
-    for (let d=1; d<=lastDay; d++){
-      const dayEl = document.createElement("div");
-      dayEl.className = "day";
-      const dayNum = document.createElement("div");
-      dayNum.className = "num";
-      dayNum.textContent = d;
-      dayEl.appendChild(dayNum);
-
-      const dayRes = reservationsForDay(year, month, d);
-
-      const items = document.createElement("div");
-      items.className = "items";
-      if (dayRes.length>0){
-        dayRes.slice(0,3).forEach(r => {
-          const dt = r.timestamp && ('toDate' in r.timestamp ? r.timestamp.toDate() : new Date(r.timestamp.seconds*1000));
-          const t = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-          const item = document.createElement("div");
-          item.textContent = `${r.name} — ${t} — ${r.teren}`;
-          items.appendChild(item);
-        });
-        if (dayRes.length>3){
-          const more = document.createElement("div");
-          more.textContent = `+${dayRes.length-3} više...`;
-          more.style.color = "#666";
-          items.appendChild(more);
-        }
-        dayEl.appendChild(items);
-      }
-
-      const slotDate = new Date(year, month, d);
-      const slotIsPast = new Date(today.getFullYear(), today.getMonth(), today.getDate()) > slotDate;
-      
-      if (slotIsPast) {
-        dayEl.classList.add("past");
-      } else if (dayRes.length===0) {
-        dayEl.classList.add("available");
-      } else {
-        const mine = dayRes.find(r => r.user === (currentUser && currentUser.email));
-        if (mine) dayEl.classList.add("mine");
-        else dayEl.classList.add("reserved-other");
-      }
-
-      dayEl.addEventListener("click", () => {
-        if (slotIsPast) return;
-        selectedDay = new Date(year, month, d);
-        selectedDateText.textContent = formatLocalDate(year,month,d);
-        reservationForm.style.display = "block";
-      });
-
-      daysGrid.appendChild(dayEl);
-    }
-  }
-
-  prevMonthBtn.addEventListener("click", () => {
-    visibleMonth--;
-    if (visibleMonth < 0){ visibleMonth = 11; visibleYear--; }
-    renderCalendar();
-  });
-
-  nextMonthBtn.addEventListener("click", () => {
-    visibleMonth++;
-    if (visibleMonth > 11){ visibleMonth = 0; visibleYear++; }
-    renderCalendar();
-  });
-
-  // Reservation form
-  reservationForm.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    if (!selectedDay) { formMsg.textContent = "Odaberite datum."; return; }
-    if (!currentUser) { formMsg.textContent = "Morate biti prijavljeni."; return; }
-
-    const name = localStorage.getItem('hoops_displayName') || currentUser.displayName || currentUser.email || 'Unnamed';
-    const timeVal = timeInput.value;
-    const teren = terenSelect.value;
-
-    if (!timeVal || !teren){ formMsg.textContent = "Ispunite sva polja."; return; }
-    formMsg.textContent = "Spremanje…";
-
-    const [hh,mm] = timeVal.split(":").map(s => parseInt(s,10));
-    const dt = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate(), hh, mm);
-
-    try {
-      const reservationData = {
-        timestamp: Timestamp.fromDate(dt),
-        name,
-        teren,
-        user: currentUser.email,
-        createdAt: Timestamp.now()
-      };
-
-      const docRef = await addDoc(collection(db,"reservations"), reservationData);
-
-      formMsg.textContent = "Rezervirano uspješno!";
-      formMsg.style.color = "#10b981";
-      reservationForm.reset();
-      selectedDateText.textContent = "—";
-      selectedDay = null;
-
-      await loadReservations();
-      renderCalendar();
-
-      // Send notification
-      const dateStr = formatLocalDate(dt.getFullYear(), dt.getMonth(), dt.getDate());
-      const timeStr = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      await notifyAllUsers(`${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`, docRef.id);
-
-    } catch(err){
-      console.error("Reservation error", err);
-      formMsg.textContent = "Greška pri spremanju.";
-      formMsg.style.color = "#d32f2f";
-    }
-  });
-
-  cancelBtn.addEventListener("click", () => {
-    reservationForm.reset();
-    selectedDateText.textContent = "—";
-    selectedDay = null;
-    formMsg.textContent = "";
-    reservationForm.style.display = "none";
-  });
-
-  // Notify all users
-  async function notifyAllUsers(message, reservationId) {
-    try {
-      await addDoc(collection(db, 'notifications'), {
-        message: message,
-        reservationId: reservationId,
-        createdAt: Timestamp.now(),
-        type: 'reservation'
-      });
-    } catch (error) {
-      console.error('Error creating notification:', error);
-    }
-  }
-
-  // Tab navigation
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      btn.classList.add('active');
-      const tabId = btn.dataset.tab + 'Tab';
-      document.getElementById(tabId).classList.add('active');
-      
-      if (btn.dataset.tab === 'leaderboard') {
-        startLeaderboardRealtime();
-      }
-      if (btn.dataset.tab === 'notifications') {
-        startNotificationsRealtime();
-      }
-    });
-  });
-
-  // Leaderboard
-  function startLeaderboardRealtime() {
-    if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
-
-    try {
-      const gamesRef = collection(db, 'games');
-      leaderboardUnsub = onSnapshot(gamesRef, 
-        () => { computeAndRenderLeaderboard(); },
-        (error) => {
-          console.error('Leaderboard error:', error);
-          computeAndRenderLeaderboard();
-        }
-      );
-
-      computeAndRenderLeaderboard();
-    } catch (error) {
-      console.error('Error starting leaderboard:', error);
-      computeAndRenderLeaderboard();
-    }
-  }
-
-  async function computeAndRenderLeaderboard() {
-    try {
-      leaderboardLoading.style.display = '';
-      leaderboardTable.style.display = 'none';
-      leaderboardEmpty.style.display = 'none';
-      leaderboardBody.innerHTML = '';
-
-      const usersMap = {};
-      const gamesSnap = await getDocs(collection(db, 'games'));
-      let gameCount = 0;
-      
-      gamesSnap.forEach(docSnap => {
-        const g = docSnap.data();
-        const t1Key = (g.team1 || '').toString().toLowerCase().trim();
-        const t2Key = (g.team2 || '').toString().toLowerCase().trim();
-          
-        if (!t1Key || !t2Key) return;
-        gameCount++;
-          
-        if (!usersMap[t1Key]) {
-          usersMap[t1Key] = { 
-            key: t1Key, 
-            name: g.team1Display || t1Key, 
-            wins: 0, 
-            losses: 0, 
-            pointsFor: 0, 
-            pointsAgainst: 0 
-          };
-        }
-        if (!usersMap[t2Key]) {
-          usersMap[t2Key] = { 
-            key: t2Key, 
-            name: g.team2Display || t2Key, 
-            wins: 0, 
-            losses: 0, 
-            pointsFor: 0, 
-            pointsAgainst: 0 
-          };
-        }
-          
-        usersMap[t1Key].pointsFor += (g.score1 || 0);
-        usersMap[t1Key].pointsAgainst += (g.score2 || 0);
-        usersMap[t2Key].pointsFor += (g.score2 || 0);
-        usersMap[t2Key].pointsAgainst += (g.score1 || 0);
-          
-        if ((g.score1 || 0) > (g.score2 || 0)) { 
-          usersMap[t1Key].wins += 1; 
-          usersMap[t2Key].losses += 1; 
-        } else if ((g.score2 || 0) > (g.score1 || 0)) { 
-          usersMap[t2Key].wins += 1; 
-          usersMap[t1Key].losses += 1; 
-        }
-      });
-
-      leaderboardLoading.style.display = 'none';
-        
-      if (gameCount === 0) { 
-        leaderboardEmpty.style.display = '';
-        return; 
-      }
-
-      const arr = Object.values(usersMap);
-      arr.sort((a,b) => { 
-        if ((b.wins||0) !== (a.wins||0)) return (b.wins||0)-(a.wins||0); 
-        return ((b.pointsFor||0)-(b.pointsAgainst||0)) - ((a.pointsFor||0)-(a.pointsAgainst||0)); 
-      });
-
-      arr.forEach(u => {
-        const tr = document.createElement('tr');
-        const nameEl = document.createElement('a');
-        nameEl.href = '#';
-        nameEl.className = 'profile-link';
-        nameEl.textContent = u.name;
-        nameEl.addEventListener('click', (e) => { 
-          e.preventDefault(); 
-          openProfileModal(u.key, false); 
-        });
-        
-        const tdName = document.createElement('td'); 
-        tdName.appendChild(nameEl);
-        const tdWins = document.createElement('td'); 
-        tdWins.className = 'center'; 
-        tdWins.textContent = u.wins||0;
-        const tdLoss = document.createElement('td'); 
-        tdLoss.className = 'center'; 
-        tdLoss.textContent = u.losses||0;
-        const tdDiff = document.createElement('td'); 
-        tdDiff.className = 'center'; 
-        tdDiff.textContent = (u.pointsFor||0)-(u.pointsAgainst||0);
-        
-        tr.appendChild(tdName); 
-        tr.appendChild(tdWins); 
-        tr.appendChild(tdLoss); 
-        tr.appendChild(tdDiff);
-        leaderboardBody.appendChild(tr);
-      });
-
-      leaderboardTable.style.display = 'table';
-    } catch (error) {
-      console.error('Error loading leaderboard:', error);
-      leaderboardLoading.style.display = 'none';
-      leaderboardEmpty.style.display = '';
-    }
-  }
-
-  // Notifications
-  function startNotificationsRealtime() {
-    if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
-
-    try {
-      const notificationsRef = collection(db, 'notifications');
-      const q = query(notificationsRef, orderBy('createdAt', 'desc'), limit(20));
-
-      notificationsUnsub = onSnapshot(q, 
-        (snapshot) => { renderNotifications(snapshot); },
-        (error) => {
-          console.error('Notifications error:', error);
-          notificationsLoading.style.display = 'none';
-          notificationsEmpty.style.display = '';
-        }
-      );
-    } catch (error) {
-      console.error('Error starting notifications:', error);
-      notificationsLoading.style.display = 'none';
-      notificationsEmpty.style.display = '';
-    }
-  }
-
-  function renderNotifications(snapshot) {
-    notificationsLoading.style.display = 'none';
-    notificationsList.style.display = 'none';
-    notificationsEmpty.style.display = 'none';
-
-    if (snapshot.empty) {
-      notificationsEmpty.style.display = '';
-      return;
-    }
-
-    notificationsList.innerHTML = '';
-    
-    snapshot.forEach(doc => {
-      const notification = doc.data();
-      const notificationEl = document.createElement('div');
-      notificationEl.style.cssText = `
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: var(--shadow);
-      `;
-
-      const date = notification.createdAt?.toDate ? 
-        notification.createdAt.toDate() : 
-        new Date(notification.createdAt?.seconds * 1000);
-      
-      const dateStr = date ? date.toLocaleString('hr-HR') : 'Nepoznato';
-
-      notificationEl.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 4px;">${notification.message}</div>
-        <div class="small">${dateStr}</div>
-      `;
-
-      notificationsList.appendChild(notificationEl);
-    });
-
-    notificationsList.style.display = 'block';
-  }
-
-  // Games listener
-  function startGamesListener() {
-    if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
-    
-    try {
-      const gamesRef = collection(db, 'games');
-      const q = query(gamesRef, orderBy('createdAt', 'desc'), limit(1));
-      
-      gamesUnsub = onSnapshot(q, (snapshot) => {
-        snapshot.docChanges().forEach(change => {
-          if (change.type === 'added') {
-            const game = change.doc.data();
-            
-            if (game.createdAt && game.createdAt.toDate) {
-              const gameTime = game.createdAt.toDate();
-              const now = new Date();
-              const timeDiff = now.getTime() - gameTime.getTime();
-              
-              if (timeDiff < 30000) {
-                const team1 = game.team1Display || game.team1;
-                const team2 = game.team2Display || game.team2;
-                const message = `Nova igra: ${team1} vs ${team2} (${game.score1}-${game.score2})`;
-                showInAppNotification('Hoops', message);
-              }
-            }
-          }
-        });
-      });
-    } catch (error) {
-      console.error('Error starting games listener:', error);
-    }
-  }
-
-  // Profile modal
-  function openProfileModal(userKey, isOwnProfile) {
-    modalContent.innerHTML = '<div class="small">Učitavanje...</div>'; 
-    modalBackdrop.style.display = 'flex';
-
-    const header = document.createElement('div');
-    const avatarLarge = document.createElement('div');
-    avatarLarge.className = 'profile-avatar-large';
-    
-    const nameH = document.createElement('h3');
-    nameH.id = 'modalPlayerName';
-    nameH.textContent = userKey;
-    nameH.style.textAlign = 'center';
-    nameH.style.margin = '0 0 8px';
-    
-    const statsRow = document.createElement('div');
-    statsRow.className = 'profile-stats';
-    statsRow.innerHTML = `
-      <div class="stat-box">
-        <div class="stat-value" id="modalWins">0</div>
-        <div class="stat-label">Wins</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="modalLosses">0</div>
-        <div class="stat-label">Losses</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="modalDiff">0</div>
-        <div class="stat-label">Point Diff</div>
-      </div>
-    `;
-    
-    const gamesTitle = document.createElement('h4');
-    gamesTitle.textContent = 'Recent Games';
-    gamesTitle.style.margin = '20px 0 12px';
-    
-    const gamesContainer = document.createElement('div');
-    gamesContainer.id = 'modalGames';
-    gamesContainer.className = 'small';
-    gamesContainer.textContent = 'Učitavanje...';
-
-    header.appendChild(avatarLarge);
-    header.appendChild(nameH);
-    
-    modalContent.innerHTML = '';
-    modalContent.appendChild(header);
-    modalContent.appendChild(statsRow);
-    modalContent.appendChild(gamesTitle);
-    modalContent.appendChild(gamesContainer);
-
-    // Load user data
-    (async ()=>{
-      try{
-        const usersRef = collection(db, 'users');
-        const q = query(usersRef, where('key','==', userKey), limit(1));
-        const snap = await getDocs(q);
-        
-        if (!snap.empty) {
-          const u = snap.docs[0].data();
-          const displayName = u.displayName || u.name || userKey;
-          nameH.textContent = displayName;
-          
-          const initials = displayName.split(' ')
-            .map(n => n[0])
-            .join('')
-            .substring(0, 2)
-            .toUpperCase();
-          avatarLarge.textContent = initials;
-        } else {
-          const initials = userKey.substring(0, 2).toUpperCase();
-          avatarLarge.textContent = initials;
-        }
-      } catch(e){ 
-        console.warn('User lookup failed', e); 
-      }
-    })();
-
-    // Load games
-    const gamesRef = collection(db, 'games');
-    const q1 = query(gamesRef, where('team1', '==', userKey), orderBy('createdAt','desc'), limit(10));
-    const q2 = query(gamesRef, where('team2', '==', userKey), orderBy('createdAt','desc'), limit(10));
-
-    const gamesMap = new Map();
-
-    function renderModalGames() {
-      const arr = Array.from(gamesMap.values()).sort((a,b)=>{
-        const da = a.createdAt?.toDate?.() || new Date(a.createdAt);
-        const db = b.createdAt?.toDate?.() || new Date(b.createdAt);
-        return db - da;
-      }).slice(0, 10);
-      
-      if (arr.length===0) { 
-        gamesContainer.textContent = 'Nema odigranih igara.'; 
-        document.getElementById('modalWins').textContent='0'; 
-        document.getElementById('modalLosses').textContent='0'; 
-        document.getElementById('modalDiff').textContent='0'; 
-        return; 
-      }
-      
-      let wins=0, losses=0, pf=0, pa=0;
-      const table = document.createElement('table');
-      table.style.width='100%';
-      table.style.marginTop='8px';
-      table.innerHTML = '<thead><tr><th>Date</th><th>Opponent</th><th>Score</th><th>Result</th></tr></thead>';
-      const tbody=document.createElement('tbody');
-      
-      arr.forEach(g=>{
-        const t1 = (g.team1||'').toString().toLowerCase();
-        const t2 = (g.team2||'').toString().toLowerCase();
-        const team1Display = g.team1Display||g.team1||t1;
-        const team2Display = g.team2Display||g.team2||t2;
-        const score1=g.score1||0;
-        const score2=g.score2||0;
-        const dateVal = g.createdAt?.toDate?.() || new Date(g.createdAt);
-        const dateStr = dateVal.toLocaleString([], {dateStyle:'short', timeStyle:'short'});
-        
-        let myScore, oppScore, oppName;
-        if (t1===userKey){
-          myScore=score1;
-          oppScore=score2;
-          oppName=team2Display;
-        } else {
-          myScore=score2;
-          oppScore=score1;
-          oppName=team1Display;
-        }
-        
-        pf+=myScore;
-        pa+=oppScore;
-        
-        let result='';
-        if (myScore>oppScore){
-          wins++;
-          result='<span style="color:var(--success);font-weight:600">W</span>';
-        } else if (myScore<oppScore){
-          losses++;
-          result='<span style="color:var(--error);font-weight:600">L</span>';
-        } else {
-          result='<span style="color:var(--muted)">D</span>';
-        }
-        
-        const tr=document.createElement('tr');
-        tr.innerHTML = `<td>${dateStr}</td><td>${oppName}</td><td>${myScore} — ${oppScore}</td><td style="text-align:center">${result}</td>`;
-        tbody.appendChild(tr);
-      });
-      
-      table.appendChild(tbody);
-      gamesContainer.innerHTML='';
-      gamesContainer.appendChild(table);
-      
-      document.getElementById('modalWins').textContent=String(wins);
-      document.getElementById('modalLosses').textContent=String(losses);
-      document.getElementById('modalDiff').textContent=String(pf-pa);
-    }
-
-    onSnapshot(q1, snap => {
-      snap.docChanges().forEach(ch=>{
-        if (ch.type==='removed') gamesMap.delete(ch.doc.id);
-        else gamesMap.set(ch.doc.id, ch.doc.data());
-      });
-      renderModalGames();
-    });
-    
-    onSnapshot(q2, snap => {
-      snap.docChanges().forEach(ch=>{
-        if (ch.type==='removed') gamesMap.delete(ch.doc.id);
-        else gamesMap.set(ch.doc.id, ch.doc.data());
-      });
-      renderModalGames();
-    });
-  }
-
-  modalClose.addEventListener('click', () => {
-    modalBackdrop.style.display = 'none';
-  });
-
-  modalBackdrop.addEventListener('click', (e)=>{
-    if (e.target===modalBackdrop){
-      modalClose.click();
-    }
-  });
-
-  // Network status
-  window.addEventListener('online', () => {
-    isOnline = true;
-    offlineIndicator.style.display = 'none';
-    if (currentUser) {
-      loadReservations().then(() => renderCalendar());
-    }
-  });
-
-  window.addEventListener('offline', () => {
-    isOnline = false;
-    offlineIndicator.style.display = 'block';
-  });
-
-  // PWA install
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'inline-block';
-  });
-
-  installBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`PWA install: ${outcome}`);
-      deferredPrompt = null;
-      installBtn.style.display = 'none';
-    }
-  });
-
-  // Service Worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(reg => {
-          console.log('SW registered');
-          
-          setInterval(() => reg.update(), 60000);
-          
-          reg.addEventListener('updatefound', () => {
-            const newSW = reg.installing;
-            newSW.addEventListener('statechange', () => {
-              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                showUpdateBanner();
-              }
-            });
-          });
-        })
-        .catch(err => console.error('SW registration failed:', err));
-    });
-  }
-
-  function showUpdateBanner() {
-    const banner = document.createElement('div');
-    banner.className = 'update-banner';
-    banner.style.display = 'flex';
-    banner.innerHTML = `
-      <span>🔄 Nova verzija dostupna!</span>
-      <button id="updateNowBtn">Ažuriraj</button>
-    `;
-    document.body.appendChild(banner);
-    
-    document.getElementById('updateNowBtn').addEventListener('click', () => {
-      window.location.reload();
-    });
-  }
-  </script>
 </head>
 <body>
   <div id="loginWrapper">
@@ -1782,5 +659,1095 @@
       <div id="modalContent"></div>
     </div>
   </div>
+
+<script>
+  // Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyAnFYrebR69a2rmYeT-TWrX1RB_Tzsh3Tk",
+    authDomain: "hoops-165ec.firebaseapp.com",
+    projectId: "hoops-165ec",
+    storageBucket: "hoops-165ec.firebasestorage.app",
+    messagingSenderId: "563400604791",
+    appId: "1:563400604791:web:50183bcf65de09bd019a72",
+    measurementId: "G-C3YPHXZCXN"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  let messaging = null;
+
+  // Initialize messaging if supported
+  try {
+    messaging = firebase.messaging();
+  } catch (error) {
+    console.warn('Firebase Messaging not supported:', error);
+  }
+
+  // Set persistence
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() => {
+      console.log('Auth persistence set to LOCAL');
+    })
+    .catch((error) => {
+      console.error('Error setting persistence:', error);
+    });
+
+  // DOM refs
+  const loginWrapper = document.getElementById("loginWrapper");
+  const googleLoginBtn = document.getElementById("googleLoginBtn");
+  const loginLoading = document.getElementById("loginLoading");
+
+  const appRoot = document.getElementById("app");
+  const profileBtn = document.getElementById("profileBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const installBtn = document.getElementById("installBtn");
+
+  const weekdaysContainer = document.getElementById("weekdays");
+  const daysGrid = document.getElementById("daysGrid");
+  const monthTitle = document.getElementById("monthTitle");
+  const prevMonthBtn = document.getElementById("prevMonth");
+  const nextMonthBtn = document.getElementById("nextMonth");
+
+  const reservationForm = document.getElementById("reservationForm");
+  const timeInput = document.getElementById("timeInput");
+  const terenSelect = document.getElementById("terenSelect");
+  const selectedDateText = document.getElementById("selectedDateText");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const formMsg = document.getElementById("formMsg");
+
+  const leaderboardBody = document.getElementById("leaderboardBody");
+  const leaderboardTable = document.getElementById("leaderboardTable");
+  const leaderboardLoading = document.getElementById("leaderboardLoading");
+  const leaderboardEmpty = document.getElementById("leaderboardEmpty");
+
+  const notificationsList = document.getElementById("notificationsList");
+  const notificationsLoading = document.getElementById("notificationsLoading");
+  const notificationsEmpty = document.getElementById("notificationsEmpty");
+
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalContent = document.getElementById("modalContent");
+  const modalClose = document.getElementById("modalClose");
+
+  const offlineIndicator = document.getElementById('offlineIndicator');
+
+  // State
+  let currentUser = null;
+  let visibleYear = (new Date()).getFullYear();
+  let visibleMonth = (new Date()).getMonth();
+  let selectedDay = null;
+  let reservationsCache = [];
+  let isOnline = navigator.onLine;
+  let fcmToken = null;
+  let leaderboardUnsub = null;
+  let notificationsUnsub = null;
+  let gamesUnsub = null;
+  let deferredPrompt;
+
+  const WEEKDAYS = ["Pon","Uto","Sri","Čet","Pet","Sub","Ned"];
+
+  // Utility functions
+  function slugify(s) {
+    return (s || '').toString().trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g,'');
+  }
+
+  function monthYearTitle(year, month) {
+    return new Date(year, month, 1).toLocaleString('hr-HR', { month: 'long', year: 'numeric' });
+  }
+
+  function startOfMonthWeekday(year, month) {
+    const jsDay = new Date(year, month, 1).getDay();
+    return (jsDay === 0) ? 6 : jsDay - 1;
+  }
+
+  function formatLocalDate(y,m,d){
+    return `${String(d).padStart(2,'0')}.${String(m+1).padStart(2,'0')}.${y}`;
+  }
+
+  // Initialize FCM
+  async function initializeFCM() {
+    if (!messaging) {
+      console.log('Messaging not supported');
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        console.log('Notification permission granted');
+        
+        fcmToken = await messaging.getToken({
+          vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-IHI9H-1kQj0azJmrS1ifDZxUl8QaYpu1X0VjU8jT3V8EoWUzr1'
+        });
+        
+        if (fcmToken && currentUser) {
+          await db.collection('users').doc(currentUser.uid).update({
+            fcmToken: fcmToken,
+            lastTokenUpdate: firebase.firestore.Timestamp.now()
+          });
+          console.log('FCM token updated');
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing FCM:', error);
+    }
+  }
+
+  // Listen for foreground messages
+  if (messaging) {
+    messaging.onMessage((payload) => {
+      console.log('Foreground message:', payload);
+      const notification = payload.notification;
+      if (notification) {
+        showInAppNotification(notification.title, notification.body);
+      }
+    });
+  }
+
+  function showInAppNotification(title, body) {
+    const notificationEl = document.createElement('div');
+    notificationEl.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow-lg);
+      z-index: 10000;
+      max-width: 300px;
+      animation: slideIn 0.3s ease-out;
+    `;
+    
+    notificationEl.innerHTML = `
+      <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
+      <div style="color: var(--muted);">${body}</div>
+      <button onclick="this.parentElement.remove()" style="
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: var(--muted);
+      ">×</button>
+    `;
+    
+    document.body.appendChild(notificationEl);
+    setTimeout(() => {
+      if (notificationEl.parentElement) {
+        notificationEl.remove();
+      }
+    }, 10000);
+  }
+
+  // Username prompt
+  async function promptForUsername(defaultName) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      `;
+      
+      const modalContent = document.createElement('div');
+      modalContent.style.cssText = `
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      `;
+      
+      modalContent.innerHTML = `
+        <h3 style="margin: 0 0 16px; color: var(--brand);">Odaberite ime</h3>
+        <p style="margin: 0 0 20px; color: var(--muted);">Kako se želite prikazivati?</p>
+        <input type="text" id="usernameInput" value="${defaultName}" style="
+          width: 100%;
+          padding: 12px;
+          border: 2px solid var(--border);
+          border-radius: 8px;
+          font-size: 16px;
+          margin-bottom: 20px;
+          text-align: center;
+        " placeholder="Unesite vaše ime">
+        <button id="confirmUsername" style="
+          background: var(--brand);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+        ">Potvrdi</button>
+      `;
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      const input = modalContent.querySelector('#usernameInput');
+      const confirmBtn = modalContent.querySelector('#confirmUsername');
+      
+      input.focus();
+      input.select();
+      
+      const handleConfirm = () => {
+        const username = input.value.trim();
+        if (username) {
+          document.body.removeChild(modal);
+          resolve(username);
+        }
+      };
+      
+      confirmBtn.addEventListener('click', handleConfirm);
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleConfirm();
+      });
+    });
+  }
+
+  // Ensure user in Firestore
+  async function ensureUserInFirestore(user) {
+    if (!user) return;
+    const userRef = db.collection('users').doc(user.uid);
+    const snapshot = await userRef.get();
+
+    const savedName = localStorage.getItem('hoops_displayName');
+    let chosenName = savedName;
+
+    if (!snapshot.exists || !savedName) {
+      chosenName = await promptForUsername(user.displayName || user.email || "");
+      if (!chosenName) chosenName = user.displayName || user.email || "Unnamed";
+      
+      try { 
+        localStorage.setItem('hoops_displayName', chosenName); 
+      } catch(e) { 
+        console.warn('Could not save to localStorage:', e);
+      }
+
+      const key = slugify(chosenName);
+      await userRef.set({
+        uid: user.uid,
+        email: user.email,
+        name: key,
+        displayName: chosenName,
+        key,
+        wins: 0,
+        losses: 0,
+        pointsFor: 0,
+        pointsAgainst: 0,
+        createdAt: firebase.firestore.Timestamp.now(),
+        fcmToken: null,
+        lastLogin: firebase.firestore.Timestamp.now()
+      });
+    } else {
+      await userRef.update({
+        lastLogin: firebase.firestore.Timestamp.now()
+      });
+      
+      const data = snapshot.data();
+      if (data && data.displayName && !savedName) {
+        try { 
+          localStorage.setItem('hoops_displayName', data.displayName); 
+        } catch(e){}
+      }
+    }
+  }
+
+  // Auth flow
+  googleLoginBtn.addEventListener("click", async () => {
+    try {
+      googleLoginBtn.disabled = true;
+      googleLoginBtn.textContent = 'Prijava u tijeku...';
+      
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      await auth.signInWithPopup(provider);
+    } catch(err) {
+      console.error("Login error", err);
+      googleLoginBtn.disabled = false;
+      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
+      
+      if (err.code === 'auth/popup-closed-by-user') {
+        console.log("Login popup closed by user");
+      } else {
+        alert("Prijava nije uspjela: " + (err.message || err));
+      }
+    }
+  });
+
+  logoutBtn.addEventListener("click", async () => {
+    await auth.signOut();
+  });
+
+  // Auth state listener
+  loginLoading.style.display = 'block';
+
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      currentUser = user;
+      loginWrapper.style.display = "none";
+      appRoot.style.display = "block";
+      loginLoading.style.display = "none";
+      
+      updateProfileButton();
+
+      try {
+        await ensureUserInFirestore(user);
+        await initializeFCM();
+        startGamesListener();
+        await loadReservations();
+        renderCalendar();
+      } catch (error) {
+        console.error("Error during post-login setup:", error);
+      }
+    } else {
+      currentUser = null;
+      loginWrapper.style.display = "flex";
+      appRoot.style.display = "none";
+      loginLoading.style.display = "none";
+      googleLoginBtn.disabled = false;
+      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
+      
+      if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
+      if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
+      if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
+    }
+  });
+
+  // Update profile button
+  function updateProfileButton() {
+    if (!currentUser) return;
+    
+    const displayName = localStorage.getItem('hoops_displayName') || 
+                       currentUser.displayName || 
+                       currentUser.email || 
+                       'User';
+    
+    const initials = displayName.split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+    
+    const avatar = profileBtn.querySelector('.profileAvatar');
+    avatar.textContent = initials;
+    
+    const nameSpan = profileBtn.querySelector('.profileName');
+    nameSpan.textContent = displayName.split(' ')[0];
+  }
+
+  // Open own profile
+  profileBtn.addEventListener('click', async () => {
+    if (!currentUser) return;
+    
+    const userRef = db.collection('users').doc(currentUser.uid);
+    const userDoc = await userRef.get();
+    
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      openProfileModal(userData.key, true);
+    }
+  });
+
+  // Load reservations
+  async function loadReservations(){
+    reservationsCache = [];
+    try {
+      if (!isOnline) {
+        console.log('Offline mode');
+        return;
+      }
+      
+      const snapshot = await db.collection('reservations').get();
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        reservationsCache.push({ id: docSnap.id, ...data });
+      });
+      console.log(`Loaded ${reservationsCache.length} reservations`);
+    } catch(err){
+      console.error("Error loading reservations", err);
+      reservationsCache = [];
+    }
+  }
+
+  function reservationsForDay(year,month,day){
+    return reservationsCache.filter(r => {
+      if (!r.timestamp) return false;
+      const dt = r.timestamp.toDate();
+      return dt.getFullYear()===year && dt.getMonth()===month && dt.getDate()===day;
+    });
+  }
+
+  // Render calendar
+  function renderCalendar(){
+    daysGrid.innerHTML = "";
+    weekdaysContainer.innerHTML = "";
+
+    WEEKDAYS.forEach(w => {
+      const wEl = document.createElement("div");
+      wEl.className = "weekday";
+      wEl.textContent = w;
+      weekdaysContainer.appendChild(wEl);
+    });
+
+    const year = visibleYear;
+    const month = visibleMonth;
+    monthTitle.textContent = monthYearTitle(year, month);
+
+    const firstWeekday = startOfMonthWeekday(year, month);
+    const lastDay = new Date(year, month+1, 0).getDate();
+
+    for (let i=0;i<firstWeekday;i++){
+      const empty = document.createElement("div");
+      empty.className = "day empty";
+      daysGrid.appendChild(empty);
+    }
+
+    const today = new Date();
+    for (let d=1; d<=lastDay; d++){
+      const dayEl = document.createElement("div");
+      dayEl.className = "day";
+      const dayNum = document.createElement("div");
+      dayNum.className = "num";
+      dayNum.textContent = d;
+      dayEl.appendChild(dayNum);
+
+      const dayRes = reservationsForDay(year, month, d);
+
+      const items = document.createElement("div");
+      items.className = "items";
+      if (dayRes.length>0){
+        dayRes.slice(0,3).forEach(r => {
+          const dt = r.timestamp.toDate();
+          const t = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          const item = document.createElement("div");
+          item.textContent = `${r.name} — ${t} — ${r.teren}`;
+          items.appendChild(item);
+        });
+        if (dayRes.length>3){
+          const more = document.createElement("div");
+          more.textContent = `+${dayRes.length-3} više...`;
+          more.style.color = "#666";
+          items.appendChild(more);
+        }
+        dayEl.appendChild(items);
+      }
+
+      const slotDate = new Date(year, month, d);
+      const slotIsPast = new Date(today.getFullYear(), today.getMonth(), today.getDate()) > slotDate;
+      
+      if (slotIsPast) {
+        dayEl.classList.add("past");
+      } else if (dayRes.length===0) {
+        dayEl.classList.add("available");
+      } else {
+        const mine = dayRes.find(r => r.user === (currentUser && currentUser.email));
+        if (mine) dayEl.classList.add("mine");
+        else dayEl.classList.add("reserved-other");
+      }
+
+      dayEl.addEventListener("click", () => {
+        if (slotIsPast) return;
+        selectedDay = new Date(year, month, d);
+        selectedDateText.textContent = formatLocalDate(year,month,d);
+        reservationForm.style.display = "block";
+      });
+
+      daysGrid.appendChild(dayEl);
+    }
+  }
+
+  prevMonthBtn.addEventListener("click", () => {
+    visibleMonth--;
+    if (visibleMonth < 0){ visibleMonth = 11; visibleYear--; }
+    renderCalendar();
+  });
+
+  nextMonthBtn.addEventListener("click", () => {
+    visibleMonth++;
+    if (visibleMonth > 11){ visibleMonth = 0; visibleYear++; }
+    renderCalendar();
+  });
+
+  // Reservation form
+  reservationForm.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (!selectedDay) { formMsg.textContent = "Odaberite datum."; return; }
+    if (!currentUser) { formMsg.textContent = "Morate biti prijavljeni."; return; }
+
+    const name = localStorage.getItem('hoops_displayName') || currentUser.displayName || currentUser.email || 'Unnamed';
+    const timeVal = timeInput.value;
+    const teren = terenSelect.value;
+
+    if (!timeVal || !teren){ formMsg.textContent = "Ispunite sva polja."; return; }
+    formMsg.textContent = "Spremanje…";
+
+    const [hh,mm] = timeVal.split(":").map(s => parseInt(s,10));
+    const dt = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate(), hh, mm);
+
+    try {
+      const reservationData = {
+        timestamp: firebase.firestore.Timestamp.fromDate(dt),
+        name,
+        teren,
+        user: currentUser.email,
+        createdAt: firebase.firestore.Timestamp.now()
+      };
+
+      const docRef = await db.collection('reservations').add(reservationData);
+
+      formMsg.textContent = "Rezervirano uspješno!";
+      formMsg.style.color = "#10b981";
+      reservationForm.reset();
+      selectedDateText.textContent = "—";
+      selectedDay = null;
+
+      await loadReservations();
+      renderCalendar();
+
+      const dateStr = formatLocalDate(dt.getFullYear(), dt.getMonth(), dt.getDate());
+      const timeStr = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      await notifyAllUsers(`${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`, docRef.id);
+
+    } catch(err){
+      console.error("Reservation error", err);
+      formMsg.textContent = "Greška pri spremanju.";
+      formMsg.style.color = "#d32f2f";
+    }
+  });
+
+  cancelBtn.addEventListener("click", () => {
+    reservationForm.reset();
+    selectedDateText.textContent = "—";
+    selectedDay = null;
+    formMsg.textContent = "";
+    reservationForm.style.display = "none";
+  });
+
+  // Notify all users
+  async function notifyAllUsers(message, reservationId) {
+    try {
+      await db.collection('notifications').add({
+        message: message,
+        reservationId: reservationId,
+        createdAt: firebase.firestore.Timestamp.now(),
+        type: 'reservation'
+      });
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  }
+
+  // Tab navigation
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      btn.classList.add('active');
+      const tabId = btn.dataset.tab + 'Tab';
+      document.getElementById(tabId).classList.add('active');
+      
+      if (btn.dataset.tab === 'leaderboard') {
+        startLeaderboardRealtime();
+      }
+      if (btn.dataset.tab === 'notifications') {
+        startNotificationsRealtime();
+      }
+    });
+  });
+
+  // Leaderboard
+  function startLeaderboardRealtime() {
+    if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
+
+    try {
+      leaderboardUnsub = db.collection('games').onSnapshot(
+        () => { computeAndRenderLeaderboard(); },
+        (error) => {
+          console.error('Leaderboard error:', error);
+          computeAndRenderLeaderboard();
+        }
+      );
+
+      computeAndRenderLeaderboard();
+    } catch (error) {
+      console.error('Error starting leaderboard:', error);
+      computeAndRenderLeaderboard();
+    }
+  }
+
+  async function computeAndRenderLeaderboard() {
+    try {
+      leaderboardLoading.style.display = '';
+      leaderboardTable.style.display = 'none';
+      leaderboardEmpty.style.display = 'none';
+      leaderboardBody.innerHTML = '';
+
+      const usersMap = {};
+      const gamesSnap = await db.collection('games').get();
+      let gameCount = 0;
+      
+      gamesSnap.forEach(docSnap => {
+        const g = docSnap.data();
+        const t1Key = (g.team1 || '').toString().toLowerCase().trim();
+        const t2Key = (g.team2 || '').toString().toLowerCase().trim();
+          
+        if (!t1Key || !t2Key) return;
+        gameCount++;
+          
+        if (!usersMap[t1Key]) {
+          usersMap[t1Key] = { 
+            key: t1Key, 
+            name: g.team1Display || t1Key, 
+            wins: 0, 
+            losses: 0, 
+            pointsFor: 0, 
+            pointsAgainst: 0 
+          };
+        }
+        if (!usersMap[t2Key]) {
+          usersMap[t2Key] = { 
+            key: t2Key, 
+            name: g.team2Display || t2Key, 
+            wins: 0, 
+            losses: 0, 
+            pointsFor: 0, 
+            pointsAgainst: 0 
+          };
+        }
+          
+        usersMap[t1Key].pointsFor += (g.score1 || 0);
+        usersMap[t1Key].pointsAgainst += (g.score2 || 0);
+        usersMap[t2Key].pointsFor += (g.score2 || 0);
+        usersMap[t2Key].pointsAgainst += (g.score1 || 0);
+          
+        if ((g.score1 || 0) > (g.score2 || 0)) { 
+          usersMap[t1Key].wins += 1; 
+          usersMap[t2Key].losses += 1; 
+        } else if ((g.score2 || 0) > (g.score1 || 0)) { 
+          usersMap[t2Key].wins += 1; 
+          usersMap[t1Key].losses += 1; 
+        }
+      });
+
+      leaderboardLoading.style.display = 'none';
+        
+      if (gameCount === 0) { 
+        leaderboardEmpty.style.display = '';
+        return; 
+      }
+
+      const arr = Object.values(usersMap);
+      arr.sort((a,b) => { 
+        if ((b.wins||0) !== (a.wins||0)) return (b.wins||0)-(a.wins||0); 
+        return ((b.pointsFor||0)-(b.pointsAgainst||0)) - ((a.pointsFor||0)-(a.pointsAgainst||0)); 
+      });
+
+      arr.forEach(u => {
+        const tr = document.createElement('tr');
+        const nameEl = document.createElement('a');
+        nameEl.href = '#';
+        nameEl.className = 'profile-link';
+        nameEl.textContent = u.name;
+        nameEl.addEventListener('click', (e) => { 
+          e.preventDefault(); 
+          openProfileModal(u.key, false); 
+        });
+        
+        const tdName = document.createElement('td'); 
+        tdName.appendChild(nameEl);
+        const tdWins = document.createElement('td'); 
+        tdWins.className = 'center'; 
+        tdWins.textContent = u.wins||0;
+        const tdLoss = document.createElement('td'); 
+        tdLoss.className = 'center'; 
+        tdLoss.textContent = u.losses||0;
+        const tdDiff = document.createElement('td'); 
+        tdDiff.className = 'center'; 
+        tdDiff.textContent = (u.pointsFor||0)-(u.pointsAgainst||0);
+        
+        tr.appendChild(tdName); 
+        tr.appendChild(tdWins); 
+        tr.appendChild(tdLoss); 
+        tr.appendChild(tdDiff);
+        leaderboardBody.appendChild(tr);
+      });
+
+      leaderboardTable.style.display = 'table';
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+      leaderboardLoading.style.display = 'none';
+      leaderboardEmpty.style.display = '';
+    }
+  }
+
+  // Notifications
+  function startNotificationsRealtime() {
+    if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
+
+    try {
+      notificationsUnsub = db.collection('notifications')
+        .orderBy('createdAt', 'desc')
+        .limit(20)
+        .onSnapshot(
+          (snapshot) => { renderNotifications(snapshot); },
+          (error) => {
+            console.error('Notifications error:', error);
+            notificationsLoading.style.display = 'none';
+            notificationsEmpty.style.display = '';
+          }
+        );
+    } catch (error) {
+      console.error('Error starting notifications:', error);
+      notificationsLoading.style.display = 'none';
+      notificationsEmpty.style.display = '';
+    }
+  }
+
+  function renderNotifications(snapshot) {
+    notificationsLoading.style.display = 'none';
+    notificationsList.style.display = 'none';
+    notificationsEmpty.style.display = 'none';
+
+    if (snapshot.empty) {
+      notificationsEmpty.style.display = '';
+      return;
+    }
+
+    notificationsList.innerHTML = '';
+    
+    snapshot.forEach(doc => {
+      const notification = doc.data();
+      const notificationEl = document.createElement('div');
+      notificationEl.style.cssText = `
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: var(--shadow);
+      `;
+
+      const date = notification.createdAt?.toDate ? 
+        notification.createdAt.toDate() : 
+        new Date(notification.createdAt?.seconds * 1000);
+      
+      const dateStr = date ? date.toLocaleString('hr-HR') : 'Nepoznato';
+
+      notificationEl.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 4px;">${notification.message}</div>
+        <div class="small">${dateStr}</div>
+      `;
+
+      notificationsList.appendChild(notificationEl);
+    });
+
+    notificationsList.style.display = 'block';
+  }
+
+  // Games listener
+  function startGamesListener() {
+    if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
+    
+    try {
+      gamesUnsub = db.collection('games')
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .onSnapshot((snapshot) => {
+          snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+              const game = change.doc.data();
+              
+              if (game.createdAt && game.createdAt.toDate) {
+                const gameTime = game.createdAt.toDate();
+                const now = new Date();
+                const timeDiff = now.getTime() - gameTime.getTime();
+                
+                if (timeDiff < 30000) {
+                  const team1 = game.team1Display || game.team1;
+                  const team2 = game.team2Display || game.team2;
+                  const message = `Nova igra: ${team1} vs ${team2} (${game.score1}-${game.score2})`;
+                  showInAppNotification('Hoops', message);
+                }
+              }
+            }
+          });
+        });
+    } catch (error) {
+      console.error('Error starting games listener:', error);
+    }
+  }
+
+  // Profile modal
+  function openProfileModal(userKey, isOwnProfile) {
+    modalContent.innerHTML = '<div class="small">Učitavanje...</div>'; 
+    modalBackdrop.style.display = 'flex';
+
+    const header = document.createElement('div');
+    const avatarLarge = document.createElement('div');
+    avatarLarge.className = 'profile-avatar-large';
+    
+    const nameH = document.createElement('h3');
+    nameH.id = 'modalPlayerName';
+    nameH.textContent = userKey;
+    nameH.style.textAlign = 'center';
+    nameH.style.margin = '0 0 8px';
+    
+    const statsRow = document.createElement('div');
+    statsRow.className = 'profile-stats';
+    statsRow.innerHTML = `
+      <div class="stat-box">
+        <div class="stat-value" id="modalWins">0</div>
+        <div class="stat-label">Wins</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="modalLosses">0</div>
+        <div class="stat-label">Losses</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="modalDiff">0</div>
+        <div class="stat-label">Point Diff</div>
+      </div>
+    `;
+    
+    const gamesTitle = document.createElement('h4');
+    gamesTitle.textContent = 'Recent Games';
+    gamesTitle.style.margin = '20px 0 12px';
+    
+    const gamesContainer = document.createElement('div');
+    gamesContainer.id = 'modalGames';
+    gamesContainer.className = 'small';
+    gamesContainer.textContent = 'Učitavanje...';
+
+    header.appendChild(avatarLarge);
+    header.appendChild(nameH);
+    
+    modalContent.innerHTML = '';
+    modalContent.appendChild(header);
+    modalContent.appendChild(statsRow);
+    modalContent.appendChild(gamesTitle);
+    modalContent.appendChild(gamesContainer);
+
+    // Load user data
+    (async ()=>{
+      try{
+        const q = await db.collection('users').where('key','==', userKey).limit(1).get();
+        
+        if (!q.empty) {
+          const u = q.docs[0].data();
+          const displayName = u.displayName || u.name || userKey;
+          nameH.textContent = displayName;
+          
+          const initials = displayName.split(' ')
+            .map(n => n[0])
+            .join('')
+            .substring(0, 2)
+            .toUpperCase();
+          avatarLarge.textContent = initials;
+        } else {
+          const initials = userKey.substring(0, 2).toUpperCase();
+          avatarLarge.textContent = initials;
+        }
+      } catch(e){ 
+        console.warn('User lookup failed', e); 
+      }
+    })();
+
+    // Load games
+    const gamesMap = new Map();
+
+    function renderModalGames() {
+      const arr = Array.from(gamesMap.values()).sort((a,b)=>{
+        const da = a.createdAt?.toDate?.() || new Date(a.createdAt);
+        const dbt = b.createdAt?.toDate?.() || new Date(b.createdAt);
+        return dbt - da;
+      }).slice(0, 10);
+      
+      if (arr.length===0) { 
+        gamesContainer.textContent = 'Nema odigranih igara.'; 
+        document.getElementById('modalWins').textContent='0'; 
+        document.getElementById('modalLosses').textContent='0'; 
+        document.getElementById('modalDiff').textContent='0'; 
+        return; 
+      }
+      
+      let wins=0, losses=0, pf=0, pa=0;
+      const table = document.createElement('table');
+      table.style.width='100%';
+      table.style.marginTop='8px';
+      table.innerHTML = '<thead><tr><th>Date</th><th>Opponent</th><th>Score</th><th>Result</th></tr></thead>';
+      const tbody=document.createElement('tbody');
+      
+      arr.forEach(g=>{
+        const t1 = (g.team1||'').toString().toLowerCase();
+        const t2 = (g.team2||'').toString().toLowerCase();
+        const team1Display = g.team1Display||g.team1||t1;
+        const team2Display = g.team2Display||g.team2||t2;
+        const score1=g.score1||0;
+        const score2=g.score2||0;
+        const dateVal = g.createdAt?.toDate?.() || new Date(g.createdAt);
+        const dateStr = dateVal.toLocaleString([], {dateStyle:'short', timeStyle:'short'});
+        
+        let myScore, oppScore, oppName;
+        if (t1===userKey){
+          myScore=score1;
+          oppScore=score2;
+          oppName=team2Display;
+        } else {
+          myScore=score2;
+          oppScore=score1;
+          oppName=team1Display;
+        }
+        
+        pf+=myScore;
+        pa+=oppScore;
+        
+        let result='';
+        if (myScore>oppScore){
+          wins++;
+          result='<span style="color:var(--success);font-weight:600">W</span>';
+        } else if (myScore<oppScore){
+          losses++;
+          result='<span style="color:var(--error);font-weight:600">L</span>';
+        } else {
+          result='<span style="color:var(--muted)">D</span>';
+        }
+        
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${dateStr}</td><td>${oppName}</td><td>${myScore} — ${oppScore}</td><td style="text-align:center">${result}</td>`;
+        tbody.appendChild(tr);
+      });
+      
+      table.appendChild(tbody);
+      gamesContainer.innerHTML='';
+      gamesContainer.appendChild(table);
+      
+      document.getElementById('modalWins').textContent=String(wins);
+      document.getElementById('modalLosses').textContent=String(losses);
+      document.getElementById('modalDiff').textContent=String(pf-pa);
+    }
+
+    db.collection('games').where('team1', '==', userKey).orderBy('createdAt','desc').limit(10)
+      .onSnapshot(snap => {
+        snap.docChanges().forEach(ch=>{
+          if (ch.type==='removed') gamesMap.delete(ch.doc.id);
+          else gamesMap.set(ch.doc.id, ch.doc.data());
+        });
+        renderModalGames();
+      });
+    
+    db.collection('games').where('team2', '==', userKey).orderBy('createdAt','desc').limit(10)
+      .onSnapshot(snap => {
+        snap.docChanges().forEach(ch=>{
+          if (ch.type==='removed') gamesMap.delete(ch.doc.id);
+          else gamesMap.set(ch.doc.id, ch.doc.data());
+        });
+        renderModalGames();
+      });
+  }
+
+  modalClose.addEventListener('click', () => {
+    modalBackdrop.style.display = 'none';
+  });
+
+  modalBackdrop.addEventListener('click', (e)=>{
+    if (e.target===modalBackdrop){
+      modalClose.click();
+    }
+  });
+
+  // Network status
+  window.addEventListener('online', () => {
+    isOnline = true;
+    offlineIndicator.style.display = 'none';
+    if (currentUser) {
+      loadReservations().then(() => renderCalendar());
+    }
+  });
+
+  window.addEventListener('offline', () => {
+    isOnline = false;
+    offlineIndicator.style.display = 'block';
+  });
+
+  // PWA install
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-block';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`PWA install: ${outcome}`);
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    }
+  });
+
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      // Register main service worker
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(reg => {
+          console.log('SW registered');
+          
+          // Check for updates every 60 seconds
+          setInterval(() => reg.update(), 60000);
+          
+          reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing;
+            newSW.addEventListener('statechange', () => {
+              if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateBanner();
+              }
+            });
+          });
+        })
+        .catch(err => console.error('SW registration failed:', err));
+      
+      // Register Firebase messaging service worker
+      navigator.serviceWorker.register('./firebase-messaging-sw.js')
+        .then(reg => {
+          console.log('Firebase SW registered');
+        })
+        .catch(err => console.error('Firebase SW registration failed:', err));
+    });
+  }
+
+  function showUpdateBanner() {
+    const banner = document.createElement('div');
+    banner.className = 'update-banner';
+    banner.style.display = 'flex';
+    banner.innerHTML = `
+      <span>🔄 Nova verzija dostupna!</span>
+      <button id="updateNowBtn">Ažuriraj</button>
+    `;
+    document.body.appendChild(banner);
+    
+    document.getElementById('updateNowBtn').addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
+</script>
 </body>
 </html>
