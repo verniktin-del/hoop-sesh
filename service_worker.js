@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hoops-cache-v6';
+const CACHE_NAME = 'hoops-cache-v7';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,10 +6,9 @@ const urlsToCache = [
   './manifest.json',
   './assets/icon-192.png',
   './assets/icon-512.png',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js'
+  'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'
 ];
 
 // Install event - cache resources
@@ -50,10 +49,11 @@ self.addEventListener('activate', event => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
-  // Skip cross-origin requests except Firebase
+  // Skip cross-origin requests except Firebase and CDN
   if (!event.request.url.startsWith(self.location.origin) && 
       !event.request.url.includes('firebase') &&
-      !event.request.url.includes('gstatic')) {
+      !event.request.url.includes('gstatic') &&
+      !event.request.url.includes('onesignal')) {
     return;
   }
 
@@ -139,64 +139,7 @@ self.addEventListener('message', event => {
   }
 });
 
-// Push notification handler
-self.addEventListener('push', event => {
-  console.log('[SW] Push notification received:', event);
-  
-  if (!event.data) return;
-  
-  try {
-    const data = event.data.json();
-    const title = data.notification?.title || 'Hoops';
-    const options = {
-      body: data.notification?.body || 'Nova obavijest',
-      icon: './assets/icon-192.png',
-      badge: './assets/icon-192.png',
-      tag: 'hoops-notification',
-      data: data.data || {},
-      actions: [
-        {
-          action: 'view',
-          title: 'Vidi',
-          icon: './assets/icon-192.png'
-        }
-      ],
-      requireInteraction: false,
-      vibrate: [200, 100, 200]
-    };
-
-    event.waitUntil(
-      self.registration.showNotification(title, options)
-    );
-  } catch (error) {
-    console.error('[SW] Error handling push:', error);
-  }
-});
-
-// Notification click handler
-self.addEventListener('notificationclick', event => {
-  console.log('[SW] Notification clicked:', event);
-  
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then(clientList => {
-        // If app is already open, focus it
-        for (let client of clientList) {
-          if (client.url.includes(self.location.origin) && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        // Otherwise open new window
-        if (clients.openWindow) {
-          return clients.openWindow('/');
-        }
-      })
-  );
-});
-
-// Background sync (for offline reservations)
+// Background sync (for offline reservations) - optional
 self.addEventListener('sync', event => {
   console.log('[SW] Background sync:', event.tag);
   
@@ -206,7 +149,6 @@ self.addEventListener('sync', event => {
 });
 
 async function syncReservations() {
-  // Implementation for syncing offline reservations
   console.log('[SW] Syncing reservations...');
   // This would sync any offline-queued reservations
 }
