@@ -13,11 +13,13 @@
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="icon" href="assets/icon-192.png">
 
-  <!-- Firebase SDKs - Compat version for compatibility -->
+  <!-- Firebase SDKs - Compat version -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
   <style>
     :root{
@@ -101,7 +103,7 @@
       box-shadow:var(--shadow-lg);
       background:#1a3a7a;
     }
-    #google:disabled{
+    #googleLoginBtn:disabled{
       opacity:0.6;
       cursor:not-allowed;
       transform:none;
@@ -308,7 +310,6 @@
     .reserved-other{background:linear-gradient(90deg,#fff4e0,#fff8f0)}
     .past{opacity:0.5;pointer-events:none}
 
-
     /* right panel - form */
     .formCard{
       background:var(--card);
@@ -339,21 +340,21 @@
 
     .small{font-size:13px;color:var(--muted)}
 
-    /* Leaderboard styles */
-    .leaderboard-container{
+    /* Leaderboard & Games table styles */
+    .games-container{
       width:100%;
       overflow-x:auto;
       margin-top:16px;
       border-radius:8px;
       border:1px solid var(--border);
     }
-    .leaderboard-table{
+    .games-table{
       width:100%;
       border-collapse:collapse;
       background:var(--card);
       min-width:300px;
     }
-    .leaderboard-table th{
+    .games-table th{
       background:var(--brand);
       color:white;
       padding:12px 8px;
@@ -362,19 +363,19 @@
       font-size:14px;
       border-bottom:2px solid var(--accent);
     }
-    .leaderboard-table th.center{
+    .games-table th.center{
       text-align:center;
     }
-    .leaderboard-table td{
+    .games-table td{
       padding:12px 8px;
       border-bottom:1px solid var(--border);
       font-size:14px;
       vertical-align:middle;
     }
-    .leaderboard-table tr:hover{
+    .games-table tr:hover{
       background:var(--bg);
     }
-    .leaderboard-table .center{
+    .games-table .center{
       text-align:center;
     }
     .profile-link{
@@ -397,11 +398,6 @@
       padding:6px 8px;border-radius:6px;
     }
 
-    /* Leaderboard specific tweaks (reuses formCard for consistent look) */
-    .leaderboardCard{
-      margin-top:18px;
-      padding:12px;
-    }
     .center { text-align:center }
 
     /* Modal styles */
@@ -492,6 +488,7 @@
       border:1px solid var(--border);
       width:calc(100% - 40px);
       box-sizing:border-box;
+      overflow-x:auto;
     }
     .tab-btn{
       padding:12px 20px;
@@ -504,6 +501,7 @@
       transition:all 0.3s ease;
       position:relative;
       flex:1;
+      white-space:nowrap;
     }
     .tab-btn.active{
       color:var(--brand);
@@ -623,14 +621,14 @@
       .brand h2{
         font-size:20px;
       }
-      .leaderboard-container{
+      .games-container{
         margin-top:12px;
       }
-      .leaderboard-table th{
+      .games-table th{
         padding:10px 6px;
         font-size:12px;
       }
-      .leaderboard-table td{
+      .games-table td{
         padding:10px 6px;
         font-size:12px;
       }
@@ -662,15 +660,15 @@
       .monthTitle{
         font-size:14px;
       }
-      .leaderboard-table th{
+      .games-table th{
         padding:8px 4px;
         font-size:11px;
       }
-      .leaderboard-table td{
+      .games-table td{
         padding:8px 4px;
         font-size:11px;
       }
-      .leaderboard-table{
+      .games-table{
         min-width:280px;
       }
     }
@@ -702,8 +700,8 @@
   <div id="app">
     <header class="appHeader">
       <div class="brand">
-        <h2>Rezervacije</h2>
-        <div class="small">Upravljanje terminima</div>
+        <h2>Hoops</h2>
+        <div class="small">Rezervacije & Igre</div>
       </div>
 
       <div class="userBar">
@@ -720,8 +718,10 @@
       <!-- Tab Navigation -->
       <div class="tab-nav">
         <button class="tab-btn active" data-tab="calendar">📅 Kalendar</button>
+        <button class="tab-btn" data-tab="1v1">🏀 1v1</button>
+        <button class="tab-btn" data-tab="2v2">👥 2v2</button>
+        <button class="tab-btn" data-tab="3v3">👪 3v3</button>
         <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
-        <button class="tab-btn" data-tab="notifications">🔔 Obavještenja</button>
       </div>
 
       <!-- Calendar Tab -->
@@ -773,38 +773,103 @@
         </div>
       </div>
 
+      <!-- 1v1 Games Tab -->
+      <div id="1v1Tab" class="tab-content">
+        <section class="calendarCard" aria-label="1v1 Games">
+          <h3>🏀 1v1 Games</h3>
+          <div id="games1v1Loading" class="small">Učitavanje...</div>
+
+          <div class="games-container">
+            <table id="games1v1Table" class="games-table" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Player 1</th>
+                  <th class="center">Score</th>
+                  <th>Player 2</th>
+                  <th class="center">Winner</th>
+                </tr>
+              </thead>
+              <tbody id="games1v1Body"></tbody>
+            </table>
+          </div>
+
+          <div id="games1v1Empty" class="small" style="display:none">Nema odigranih 1v1 igara.</div>
+        </section>
+      </div>
+
+      <!-- 2v2 Games Tab -->
+      <div id="2v2Tab" class="tab-content">
+        <section class="calendarCard" aria-label="2v2 Games">
+          <h3>👥 2v2 Games</h3>
+          <div id="games2v2Loading" class="small">Učitavanje...</div>
+
+          <div class="games-container">
+            <table id="games2v2Table" class="games-table" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Team 1</th>
+                  <th class="center">Score</th>
+                  <th>Team 2</th>
+                  <th class="center">Winner</th>
+                </tr>
+              </thead>
+              <tbody id="games2v2Body"></tbody>
+            </table>
+          </div>
+
+          <div id="games2v2Empty" class="small" style="display:none">Nema odigranih 2v2 igara.</div>
+        </section>
+      </div>
+
+      <!-- 3v3 Games Tab -->
+      <div id="3v3Tab" class="tab-content">
+        <section class="calendarCard" aria-label="3v3 Games">
+          <h3>👪 3v3 Games</h3>
+          <div id="games3v3Loading" class="small">Učitavanje...</div>
+
+          <div class="games-container">
+            <table id="games3v3Table" class="games-table" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Team 1</th>
+                  <th class="center">Score</th>
+                  <th>Team 2</th>
+                  <th class="center">Winner</th>
+                </tr>
+              </thead>
+              <tbody id="games3v3Body"></tbody>
+            </table>
+          </div>
+
+          <div id="games3v3Empty" class="small" style="display:none">Nema odigranih 3v3 igara.</div>
+        </section>
+      </div>
+
       <!-- Leaderboard Tab -->
       <div id="leaderboardTab" class="tab-content">
         <section class="calendarCard" aria-label="Leaderboard">
-          <h3>🏆 Leaderboard</h3>
-      <div id="leaderboardLoading" class="small">Učitavanje...</div>
+          <h3>🏆 Leaderboard (1v1)</h3>
+          <div id="leaderboardLoading" class="small">Učitavanje...</div>
 
-          <div class="leaderboard-container">
-            <table id="leaderboardTable" class="leaderboard-table" style="display:none;">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th class="center">Wins</th>
-            <th class="center">Losses</th>
+          <div class="games-container">
+            <table id="leaderboardTable" class="games-table" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th class="center">Wins</th>
+                  <th class="center">Losses</th>
                   <th class="center">Diff</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboardBody"></tbody>
-      </table>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody"></tbody>
+            </table>
           </div>
 
-      <div id="leaderboardEmpty" class="small" style="display:none">Nema odigranih igara za prikaz.</div>
-      <div style="margin-top:8px;" class="small">Scores are aggregated from logged 1v1 games.</div>
-    </section>
-      </div>
-
-      <!-- Notifications Tab -->
-      <div id="notificationsTab" class="tab-content">
-        <section class="calendarCard" aria-label="Notifications">
-          <h3>🔔 Obavještenja</h3>
-          <div id="notificationsLoading" class="small">Učitavanje...</div>
-          <div id="notificationsList" style="display:none;"></div>
-          <div id="notificationsEmpty" class="small" style="display:none;">Nema obavještenja.</div>
+          <div id="leaderboardEmpty" class="small" style="display:none">Nema odigranih igara za prikaz.</div>
+          <div style="margin-top:8px;" class="small">Scores are calculated from logged 1v1 games only.</div>
         </section>
       </div>
 
@@ -842,20 +907,33 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
-  let messaging = null;
 
-  // Initialize messaging if supported
-  try {
-    messaging = firebase.messaging();
-    console.log('Firebase Messaging initialized');
-  } catch (error) {
-    console.warn('Firebase Messaging not supported:', error);
-  }
+  // Initialize OneSignal
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "4b47aa4a-a11e-4f44-bab0-874fcfdf8e3f",
+    });
+    
+    console.log('OneSignal initialized');
+    
+    // Listen for notification permission
+    OneSignal.Notifications.addEventListener('permissionChange', (granted) => {
+      console.log('Notification permission changed:', granted);
+    });
+    
+    // Request permission
+    const permission = await OneSignal.Notifications.permission;
+    if (!permission) {
+      console.log('Requesting notification permission...');
+      await OneSignal.Notifications.requestPermission();
+    }
+  });
 
-  // Set authentication persistence to LOCAL (stays logged in after browser restart)
+  // Set authentication persistence to LOCAL
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => {
-      console.log('Auth persistence set to LOCAL - users will stay logged in');
+      console.log('Auth persistence set to LOCAL');
     })
     .catch((error) => {
       console.error('Error setting auth persistence:', error);
@@ -885,14 +963,26 @@
   const cancelBtn = document.getElementById("cancelBtn");
   const formMsg = document.getElementById("formMsg");
 
+  // Games elements
+  const games1v1Loading = document.getElementById("games1v1Loading");
+  const games1v1Table = document.getElementById("games1v1Table");
+  const games1v1Body = document.getElementById("games1v1Body");
+  const games1v1Empty = document.getElementById("games1v1Empty");
+
+  const games2v2Loading = document.getElementById("games2v2Loading");
+  const games2v2Table = document.getElementById("games2v2Table");
+  const games2v2Body = document.getElementById("games2v2Body");
+  const games2v2Empty = document.getElementById("games2v2Empty");
+
+  const games3v3Loading = document.getElementById("games3v3Loading");
+  const games3v3Table = document.getElementById("games3v3Table");
+  const games3v3Body = document.getElementById("games3v3Body");
+  const games3v3Empty = document.getElementById("games3v3Empty");
+
   const leaderboardLoading = document.getElementById("leaderboardLoading");
   const leaderboardTable = document.getElementById("leaderboardTable");
   const leaderboardBody = document.getElementById("leaderboardBody");
   const leaderboardEmpty = document.getElementById("leaderboardEmpty");
-
-  const notificationsLoading = document.getElementById("notificationsLoading");
-  const notificationsList = document.getElementById("notificationsList");
-  const notificationsEmpty = document.getElementById("notificationsEmpty");
 
   const modalBackdrop = document.getElementById("modalBackdrop");
   const modalContent = document.getElementById("modalContent");
@@ -903,24 +993,21 @@
   // ---------- STATE VARIABLES ----------
   let currentUser = null;
   let visibleYear = (new Date()).getFullYear();
-  let visibleMonth = (new Date()).getMonth(); // 0-based
-  let selectedDay = null; // Date object (year,month,day)
-  let reservationsCache = []; // cached reservation documents
+  let visibleMonth = (new Date()).getMonth();
+  let selectedDay = null;
+  let reservationsCache = [];
   let isOnline = navigator.onLine;
-  let fcmToken = null;
 
   // Snapshot unsubscribe holders
   let leaderboardUnsub = null;
+  let games1v1Unsub = null;
+  let games2v2Unsub = null;
+  let games3v3Unsub = null;
   let profileUnsub1 = null;
   let profileUnsub2 = null;
-  let notificationsUnsub = null;
-  let gamesUnsub = null;
 
   // PWA install prompt
   let deferredPrompt;
-
-  // Notification permission
-  let notificationPermission = Notification.permission;
 
   const WEEKDAYS = ["Pon","Uto","Sri","Čet","Pet","Sub","Ned"]; 
 
@@ -928,19 +1015,18 @@
   function slugify(s) {
     return (s || '').toString().trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g,'');
   }
-function isStandalonePWA() {
-  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
-    || window.navigator.standalone === true;
-}
+  
+  function isStandalonePWA() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+      || window.navigator.standalone === true;
+  }
 
   function monthYearTitle(year, month) {
     return new Date(year, month, 1).toLocaleString('hr-HR', { month: 'long', year: 'numeric' });
   }
 
   function startOfMonthWeekday(year, month) {
-    // return 0..6 where 0 = Monday (we want Monday first)
-    const jsDay = new Date(year, month, 1).getDay(); // 0 Sunday .. 6 Saturday
-    // convert so Monday=0..Sunday=6
+    const jsDay = new Date(year, month, 1).getDay();
     return (jsDay === 0) ? 6 : jsDay - 1;
   }
 
@@ -948,151 +1034,47 @@ function isStandalonePWA() {
     return `${String(d).padStart(2,'0')}.${String(m+1).padStart(2,'0')}.${y}`;
   }
 
-  // ---------- FCM TOKEN MANAGEMENT ----------
-  async function initializeFCM() {
-    if (!messaging) {
-      console.log('Messaging not supported');
-      return;
-    }
-
+  // ---------- ONESIGNAL NOTIFICATION FUNCTIONS ----------
+  async function sendGameNotification(gameType, team1Display, team2Display, score1, score2) {
     try {
-      // Request notification permission
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        console.log('Notification permission granted');
+      // Send notification via OneSignal
+      OneSignalDeferred.push(async function(OneSignal) {
+        const message = `Nova ${gameType} igra: ${team1Display} ${score1} - ${score2} ${team2Display}`;
         
-        // Get FCM token
-        fcmToken = await messaging.getToken({
-          vapidKey: 'BEl62iUYgUivxIkv69yViEuiBIa-IHI9H-1kQj0azJmrS1ifDZxUl8QaYpu1X0VjU8jT3V8EoWUzr1'
-        });
-        
-        if (fcmToken) {
-          console.log('FCM Token:', fcmToken);
-          // Store token in user's document for sending notifications
-          if (currentUser) {
-            await updateUserFCMToken(fcmToken);
-          }
-        } else {
-          console.log('No registration token available');
+        // Show local notification
+        if (await OneSignal.Notifications.permission) {
+          new Notification('Hoops', {
+            body: message,
+            icon: './assets/icon-192.png',
+            badge: './assets/icon-192.png'
+          });
         }
-      } else {
-        console.log('Notification permission denied');
-      }
-    } catch (error) {
-      console.error('Error initializing FCM:', error);
-    }
-  }
-
-  // Update user's FCM token in Firestore
-  async function updateUserFCMToken(token) {
-    if (!currentUser) return;
-    
-    try {
-      const userRef = db.collection('users').doc(currentUser.uid);
-      await userRef.update({
-        fcmToken: token,
-        lastTokenUpdate: firebase.firestore.Timestamp.now()
+        
+        console.log('Game notification sent:', message);
       });
-      console.log('FCM token updated for user');
     } catch (error) {
-      console.error('Error updating FCM token:', error);
+      console.error('Error sending game notification:', error);
     }
   }
 
-  // Listen for foreground messages
-  if (messaging) {
-    messaging.onMessage((payload) => {
-      console.log('Message received in foreground:', payload);
-      
-      // Show notification in app
-      const notification = payload.notification;
-      if (notification) {
-        // Create in-app notification
-        showInAppNotification(notification.title, notification.body, payload.data);
-      }
-    });
-  }
-
-  // Show in-app notification
-  function showInAppNotification(title, body, data) {
-    const notificationEl = document.createElement('div');
-    notificationEl.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: var(--shadow-lg);
-      z-index: 10000;
-      max-width: 300px;
-      animation: slideIn 0.3s ease-out;
-    `;
-    
-    notificationEl.innerHTML = `
-      <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
-      <div style="color: var(--muted); margin-bottom: 12px;">${body}</div>
-      <button onclick="this.parentElement.remove()" style="
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: none;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        color: var(--muted);
-      ">×</button>
-    `;
-    
-    document.body.appendChild(notificationEl);
-    
-    // Auto remove after 10 seconds
-    setTimeout(() => {
-      if (notificationEl.parentElement) {
-        notificationEl.remove();
-      }
-    }, 10000);
-  }
-
-  // Handle join request responses from push notifications
-  async function respondToJoinRequest(reservationId, response) {
-    if (!currentUser) return;
-    
+  async function sendReservationNotification(name, teren, dateStr, timeStr) {
     try {
-      // Create a join request document
-      const joinRequestData = {
-        reservationId: reservationId,
-        userId: currentUser.uid,
-        userEmail: currentUser.email,
-        userName: currentUser.displayName || currentUser.email,
-        response: response,
-        timestamp: firebase.firestore.Timestamp.now()
-      };
-      
-      await db.collection('joinRequests').add(joinRequestData);
-      console.log('Join request response recorded:', response);
-      
-      // Show confirmation
-      if (response === 'yes') {
-        alert('Potvrđeno: Dolazim na rezervaciju!');
-      } else {
-        alert('Potvrđeno: Ne dolazim na rezervaciju.');
-      }
-      
+      OneSignalDeferred.push(async function(OneSignal) {
+        const message = `${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`;
+        
+        if (await OneSignal.Notifications.permission) {
+          new Notification('Hoops', {
+            body: message,
+            icon: './assets/icon-192.png',
+            badge: './assets/icon-192.png'
+          });
+        }
+        
+        console.log('Reservation notification sent:', message);
+      });
     } catch (error) {
-      console.error('Error responding to join request:', error);
-      alert('Greška pri slanju odgovora. Pokušajte ponovno.');
+      console.error('Error sending reservation notification:', error);
     }
-  }
-
-  // Listen for messages from service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', event => {
-      if (event.data.type === 'respondToJoinRequest') {
-        respondToJoinRequest(event.data.reservationId, event.data.response);
-      }
-    });
   }
 
   // ---------- USERNAME MANAGEMENT ----------
@@ -1125,7 +1107,7 @@ function isStandalonePWA() {
       
       modalContent.innerHTML = `
         <h3 style="margin: 0 0 16px; color: var(--brand);">Odaberite ime</h3>
-        <p style="margin: 0 0 20px; color: var(--muted);">Kako se želite prikazivati u leaderboardu?</p>
+        <p style="margin: 0 0 20px; color: var(--muted);">Kako se želite prikazivati?</p>
         <input type="text" id="usernameInput" value="${defaultName}" style="
           width: 100%;
           padding: 12px;
@@ -1179,23 +1161,20 @@ function isStandalonePWA() {
     const userRef = db.collection('users').doc(user.uid);
     const snapshot = await userRef.get();
 
-    // Always ask for username on first login or if not set
     const savedName = localStorage.getItem('hoops_displayName');
     let chosenName = savedName;
 
     if (!snapshot.exists || !savedName) {
-      // Show a better username prompt
       chosenName = await promptForUsername(user.displayName || user.email || "");
       if (!chosenName) chosenName = user.displayName || user.email || "Unnamed";
       
-      // save locally so we don't ask again on this device
-      try { localStorage.setItem('hoops_displayName', chosenName); } catch(e) { /* ignore */ }
+      try { localStorage.setItem('hoops_displayName', chosenName); } catch(e) { }
 
       const key = slugify(chosenName);
       await userRef.set({
         uid: user.uid,
         email: user.email,
-        name: key, // keep key in `name` for backward compatibility
+        name: key,
         displayName: chosenName,
         key,
         wins: 0,
@@ -1203,16 +1182,13 @@ function isStandalonePWA() {
         pointsFor: 0,
         pointsAgainst: 0,
         createdAt: firebase.firestore.Timestamp.now(),
-        fcmToken: null, // Will be set when FCM initializes
         lastLogin: firebase.firestore.Timestamp.now()
       });
     } else {
-      // Update last login time
       await userRef.update({
         lastLogin: firebase.firestore.Timestamp.now()
       });
       
-      // Ensure displayName saved locally for future logins on this device
       const data = snapshot.data();
       if (data && data.displayName && !savedName) {
         try { localStorage.setItem('hoops_displayName', data.displayName); } catch(e){};
@@ -1221,67 +1197,58 @@ function isStandalonePWA() {
   }
 
   // ---------- AUTHENTICATION FLOW ----------
-  console.log('Setting up login button handler...');
-  
- googleLoginBtn.addEventListener("click", async () => {
-  console.log("Login button clicked!");
-  try {
-    googleLoginBtn.disabled = true;
-    // show a simple loading label but keep icon if you want:
-    googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" /> Prijava u tijeku...';
-
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('email');
-    provider.addScope('profile');
-
-    // If running as an installed PWA / standalone, prefer redirect (popups are unreliable)
-    if (isStandalonePWA()) {
-      console.log('Detected standalone PWA — using signInWithRedirect');
-      await auth.signInWithRedirect(provider);
-      // signInWithRedirect will navigate away; on return the onAuthStateChanged will fire
-      return;
-    }
-
-    // Try popup first in normal browser tabs
-    console.log("Attempting signInWithPopup...");
+  googleLoginBtn.addEventListener("click", async () => {
+    console.log("Login button clicked!");
     try {
-      const result = await auth.signInWithPopup(provider);
-      console.log("Sign in successful!", result.user && result.user.email);
-      // success will be handled by onAuthStateChanged
-      return;
-    } catch (popupErr) {
-      console.warn('signInWithPopup failed:', popupErr && popupErr.code, popupErr);
-      // If popup was blocked or the environment doesn't support it, fall back to redirect
-      const failCodes = [
-        'auth/popup-blocked',
-        'auth/pop-up-blocked',
-        'auth/operation-not-supported-in-this-environment',
-        'auth/cancelled-popup-request',
-        'auth/popup-closed-by-user'
-      ];
-      if (!popupErr || failCodes.includes(popupErr.code) || popupErr.message?.toLowerCase().includes('popup')) {
-        console.log('Falling back to signInWithRedirect due to popup failure');
+      googleLoginBtn.disabled = true;
+      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" /> Prijava u tijeku...';
+
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('email');
+      provider.addScope('profile');
+
+      if (isStandalonePWA()) {
+        console.log('Detected standalone PWA – using signInWithRedirect');
         await auth.signInWithRedirect(provider);
         return;
       }
-      // otherwise rethrow to show error to user
-      throw popupErr;
-    }
-  } catch (err) {
-    console.error("Login error:", err);
-    googleLoginBtn.disabled = false;
-    googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
 
-    if (err && err.code === 'auth/popup-closed-by-user') {
-      console.log("User closed the login popup");
-    } else if (err && err.code === 'auth/cancelled-popup-request') {
-      console.log("Popup request was cancelled");
-    } else {
-      alert("Prijava nije uspjela: " + (err && err.message ? err.message : err));
+      console.log("Attempting signInWithPopup...");
+      try {
+        const result = await auth.signInWithPopup(provider);
+        console.log("Sign in successful!", result.user && result.user.email);
+        return;
+      } catch (popupErr) {
+        console.warn('signInWithPopup failed:', popupErr && popupErr.code, popupErr);
+        const failCodes = [
+          'auth/popup-blocked',
+          'auth/pop-up-blocked',
+          'auth/operation-not-supported-in-this-environment',
+          'auth/cancelled-popup-request',
+          'auth/popup-closed-by-user'
+        ];
+        if (!popupErr || failCodes.includes(popupErr.code) || popupErr.message?.toLowerCase().includes('popup')) {
+          console.log('Falling back to signInWithRedirect');
+          await auth.signInWithRedirect(provider);
+          return;
+        }
+        throw popupErr;
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      googleLoginBtn.disabled = false;
+      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
+
+      if (err && err.code === 'auth/popup-closed-by-user') {
+        console.log("User closed the login popup");
+      } else if (err && err.code === 'auth/cancelled-popup-request') {
+        console.log("Popup request was cancelled");
+      } else {
+        alert("Prijava nije uspjela: " + (err && err.message ? err.message : err));
+      }
     }
-  }
-});
-  // Logout button handler
+  });
+
   logoutBtn.addEventListener("click", async () => {
     console.log("Logout button clicked");
     try {
@@ -1292,43 +1259,23 @@ function isStandalonePWA() {
     }
   });
 
-  // Show loading state while checking auth
   loginLoading.style.display = 'block';
   console.log("Checking auth state...");
 
-  // Authentication state observer
   auth.onAuthStateChanged(async (user) => {
     console.log("Auth state changed:", user ? `User logged in: ${user.email}` : "No user logged in");
     
     if (user) {
-      console.log("User details:", {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName
-      });
-      
       currentUser = user;
       loginWrapper.style.display = "none";
       appRoot.style.display = "block";
       loginLoading.style.display = "none";
 
-      // Update profile button with user info
       updateProfileButton();
 
       try {
-        console.log("Ensuring user in Firestore...");
         await ensureUserInFirestore(user);
-        
-        console.log("Initializing FCM...");
-        await initializeFCM();
-        
-        console.log("Starting games listener...");
-        startGamesListener();
-        
-        console.log("Loading reservations...");
         await loadReservations();
-        
-        console.log("Rendering calendar...");
         renderCalendar();
         
         console.log("App initialization complete!");
@@ -1336,7 +1283,6 @@ function isStandalonePWA() {
         console.error("Error during post-login setup:", error);
       }
     } else {
-      console.log("User logged out, showing login screen");
       currentUser = null;
       loginWrapper.style.display = "flex";
       appRoot.style.display = "none";
@@ -1344,14 +1290,13 @@ function isStandalonePWA() {
       googleLoginBtn.disabled = false;
       googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
       
-      // Cleanup any subscriptions
       if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
-      if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
-      if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
+      if (games1v1Unsub) { games1v1Unsub(); games1v1Unsub = null; }
+      if (games2v2Unsub) { games2v2Unsub(); games2v2Unsub = null; }
+      if (games3v3Unsub) { games3v3Unsub(); games3v3Unsub = null; }
     }
   });
 
-  // Update profile button with user info
   function updateProfileButton() {
     if (!currentUser) return;
     
@@ -1373,7 +1318,6 @@ function isStandalonePWA() {
     nameSpan.textContent = displayName.split(' ')[0];
   }
 
-  // Open own profile
   profileBtn.addEventListener('click', async () => {
     if (!currentUser) return;
     
@@ -1388,7 +1332,6 @@ function isStandalonePWA() {
 
   // ---------- CALENDAR FUNCTIONS ----------
   async function loadReservations(){
-    // load all reservations into cache
     reservationsCache = [];
     try {
       if (!isOnline) {
@@ -1399,18 +1342,16 @@ function isStandalonePWA() {
       const snapshot = await db.collection('reservations').get();
       snapshot.forEach(docSnap => {
         const data = docSnap.data();
-        // keep id and timestamp if exists
         reservationsCache.push({ id: docSnap.id, ...data });
       });
       console.log(`Loaded ${reservationsCache.length} reservations`);
     } catch(err){
       console.error("Error loading reservations", err);
-      // Show user-friendly error message
       if (formMsg) {
         if (err.code === 'permission-denied') {
-          formMsg.textContent = "Nemate dozvole za pristup rezervacijama. Kontaktirajte administratora.";
+          formMsg.textContent = "Nemate dozvole za pristup rezervacijama.";
         } else {
-          formMsg.textContent = "Greška pri učitavanju rezervacija. Provjerite internetsku vezu.";
+          formMsg.textContent = "Greška pri učitavanju rezervacija.";
         }
         formMsg.style.color = "#d32f2f";
       }
@@ -1430,7 +1371,6 @@ function isStandalonePWA() {
     daysGrid.innerHTML = "";
     weekdaysContainer.innerHTML = "";
 
-    // weekdays header
     WEEKDAYS.forEach(w => {
       const wEl = document.createElement("div");
       wEl.className = "weekday";
@@ -1442,10 +1382,9 @@ function isStandalonePWA() {
     const month = visibleMonth;
     monthTitle.textContent = monthYearTitle(year, month);
 
-    const firstWeekday = startOfMonthWeekday(year, month); // 0..6 (Monday..Sunday)
+    const firstWeekday = startOfMonthWeekday(year, month);
     const lastDay = new Date(year, month+1, 0).getDate();
 
-    // render empty slots before first day
     for (let i=0;i<firstWeekday;i++){
       const empty = document.createElement("div");
       empty.className = "day empty";
@@ -1461,7 +1400,6 @@ function isStandalonePWA() {
       dayNum.textContent = d;
       dayEl.appendChild(dayNum);
 
-      // reservations for that day
       const dayRes = reservationsForDay(year, month, d);
 
       const items = document.createElement("div");
@@ -1471,7 +1409,7 @@ function isStandalonePWA() {
           const dt = r.timestamp.toDate();
           const t = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
           const item = document.createElement("div");
-          item.textContent = `${r.name} — ${t} — ${r.teren}`;
+          item.textContent = `${r.name} – ${t} – ${r.teren}`;
           items.appendChild(item);
         });
         if (dayRes.length>3){
@@ -1483,16 +1421,14 @@ function isStandalonePWA() {
         dayEl.appendChild(items);
       }
 
-      // tooltip with details
       if (dayRes.length>0){
         let info = "";
         dayRes.forEach(r => {
           const dt = r.timestamp.toDate();
           const t = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-          info += `${r.name} — ${t} — ${r.teren}\n`;
+          info += `${r.name} – ${t} – ${r.teren}\n`;
         });
         dayEl.setAttribute("data-tooltip", info.trim());
-        // show tooltip on hover via custom element
         dayEl.addEventListener("mouseenter", (e)=>{
           const tt = document.createElement("div");
           tt.className="tooltip";
@@ -1510,19 +1446,16 @@ function isStandalonePWA() {
         });
       }
 
-      // status classes
       const slotDate = new Date(year, month, d);
       const slotIsPast = new Date(today.getFullYear(), today.getMonth(), today.getDate()) > slotDate;
       if (slotIsPast) dayEl.classList.add("past");
       else if (dayRes.length===0) dayEl.classList.add("available");
       else {
-        // if any reservation belongs to current user, mark mine
         const mine = dayRes.find(r => r.user === (currentUser && currentUser.email));
         if (mine) dayEl.classList.add("mine");
         else dayEl.classList.add("reserved-other");
       }
 
-      // click behavior
       dayEl.addEventListener("click", () => {
         if (slotIsPast) return;
         selectedDay = new Date(year, month, d);
@@ -1534,7 +1467,6 @@ function isStandalonePWA() {
     }
   }
 
-  // prev / next handlers
   prevMonthBtn.addEventListener("click", () => {
     visibleMonth--;
     if (visibleMonth < 0){ visibleMonth = 11; visibleYear--; }
@@ -1552,7 +1484,6 @@ function isStandalonePWA() {
     if (!selectedDay) { formMsg.textContent = "Odaberite datum iz kalendara."; return; }
     if (!currentUser) { formMsg.textContent = "Morate biti prijavljeni."; return; }
 
-    // Use stored displayName or currentUser.displayName or email
     const name = localStorage.getItem('hoops_displayName') || currentUser.displayName || currentUser.email || 'Unnamed';
     const timeVal = timeInput.value;
     const teren = terenSelect.value;
@@ -1560,15 +1491,13 @@ function isStandalonePWA() {
     if (!timeVal || !teren){ formMsg.textContent = "Ispunite sva polja."; return; }
     formMsg.textContent = "Spremanje…";
 
-    // combine selectedDay + timeVal into Date
     const [hh,mm] = timeVal.split(":").map(s => parseInt(s,10));
     const dt = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate(), hh, mm);
 
-    // Prevent double booking at same timestamp for same teren (simple check)
     const clash = reservationsCache.find(r => {
       if (!r.timestamp) return false;
       const rdt = r.timestamp.toDate();
-      return Math.abs(rdt.getTime() - dt.getTime()) < (1000*60*60) && r.teren === teren; // 1h window
+      return Math.abs(rdt.getTime() - dt.getTime()) < (1000*60*60) && r.teren === teren;
     });
     if (clash){
       formMsg.textContent = "Postoji rezervacija u istom terminu za odabrani teren.";
@@ -1593,23 +1522,21 @@ function isStandalonePWA() {
       selectedDateText.textContent = "—";
       selectedDay = null;
 
-      // Send notification to all users about new reservation
       const dateStr = formatLocalDate(dt.getFullYear(), dt.getMonth(), dt.getDate());
       const timeStr = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      await notifyAllUsers(`${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`, docRef.id);
+      await sendReservationNotification(name, teren, dateStr, timeStr);
 
-      // refresh cache & calendar
       await loadReservations();
       renderCalendar();
 
     } catch(err){
       console.error("Add reservation error", err);
       if (err.code === 'permission-denied') {
-        formMsg.textContent = "Nemate dozvole za kreiranje rezervacija. Kontaktirajte administratora.";
+        formMsg.textContent = "Nemate dozvole za kreiranje rezervacija.";
       } else if (err.code === 'unavailable') {
-        formMsg.textContent = "Servis trenutno nije dostupan. Pokušajte ponovno.";
+        formMsg.textContent = "Servis trenutno nije dostupan.";
       } else {
-        formMsg.textContent = "Greška pri spremanju. Pokušajte ponovno.";
+        formMsg.textContent = "Greška pri spremanju.";
       }
       formMsg.style.color = "#d32f2f";
     }
@@ -1623,80 +1550,262 @@ function isStandalonePWA() {
     reservationForm.style.display = "none";
   });
 
-  // Notify all users function
-  async function notifyAllUsers(message, reservationId) {
-    try {
-      // Create notification document in Firestore for tracking responses
-      const notificationData = {
-        message: message,
-        reservationId: reservationId,
-        createdAt: firebase.firestore.Timestamp.now(),
-        responses: {}, // Will store user responses: {userId: 'yes'/'no'}
-        type: 'reservation'
-      };
-      
-      await db.collection('notifications').add(notificationData);
-      console.log('Notification created for all users');
-      
-      // Also show local notification
-      if (Notification.permission === 'granted') {
-        new Notification('Hoops', {
-          body: message,
-          icon: './assets/icon-192.png',
-          badge: './assets/icon-192.png'
-        });
-      }
-    } catch (error) {
-      console.error('Error creating notification:', error);
-    }
-  }
-
   // ---------- TAB NAVIGATION ----------
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      // Remove active class from all tabs and content
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
-      // Add active class to clicked tab and corresponding content
       btn.classList.add('active');
       const tabId = btn.dataset.tab + 'Tab';
       document.getElementById(tabId).classList.add('active');
       
-      // Load leaderboard data when leaderboard tab is opened
       if (btn.dataset.tab === 'leaderboard') {
         startLeaderboardRealtime();
-      }
-      // Load notifications when notifications tab is opened
-      if (btn.dataset.tab === 'notifications') {
-        startNotificationsRealtime();
+      } else if (btn.dataset.tab === '1v1') {
+        start1v1GamesRealtime();
+      } else if (btn.dataset.tab === '2v2') {
+        start2v2GamesRealtime();
+      } else if (btn.dataset.tab === '3v3') {
+        start3v3GamesRealtime();
       }
     });
   });
 
+  // ---------- 1V1 GAMES FUNCTIONALITY ----------
+  function start1v1GamesRealtime() {
+    if (games1v1Unsub) { games1v1Unsub(); games1v1Unsub = null; }
+
+    try {
+      const gamesRef = db.collection('games_1v1');
+
+      games1v1Unsub = gamesRef.orderBy('createdAt', 'desc').limit(50).onSnapshot(
+        (snapshot) => { render1v1Games(snapshot); },
+        (error) => {
+          console.error('1v1 games snapshot error:', error);
+          games1v1Loading.style.display = 'none';
+          games1v1Empty.style.display = '';
+          games1v1Empty.textContent = 'Greška pri učitavanju igara.';
+        }
+      );
+    } catch (error) {
+      console.error('Error starting 1v1 games realtime:', error);
+      games1v1Loading.style.display = 'none';
+      games1v1Empty.style.display = '';
+      games1v1Empty.textContent = 'Greška pri učitavanju igara.';
+    }
+  }
+
+  function render1v1Games(snapshot) {
+    games1v1Loading.style.display = 'none';
+    games1v1Table.style.display = 'none';
+    games1v1Empty.style.display = 'none';
+
+    if (snapshot.empty) {
+      games1v1Empty.style.display = '';
+      games1v1Empty.textContent = 'Nema odigranih 1v1 igara.';
+      return;
+    }
+
+    games1v1Body.innerHTML = '';
+    
+    snapshot.forEach(doc => {
+      const game = doc.data();
+      const tr = document.createElement('tr');
+      
+      const dateVal = game.createdAt && game.createdAt.toDate ? game.createdAt.toDate() : null;
+      const dateStr = dateVal ? dateVal.toLocaleString('hr-HR', {dateStyle:'short', timeStyle:'short'}) : '—';
+      
+      const team1Display = game.team1Display || game.team1 || '—';
+      const team2Display = game.team2Display || game.team2 || '—';
+      const score1 = game.score1 || 0;
+      const score2 = game.score2 || 0;
+      
+      let winnerText = '—';
+      if (score1 > score2) {
+        winnerText = `<span style="color:var(--success);font-weight:600">${team1Display}</span>`;
+      } else if (score2 > score1) {
+        winnerText = `<span style="color:var(--success);font-weight:600">${team2Display}</span>`;
+      } else {
+        winnerText = '<span style="color:var(--muted)">Neriješeno</span>';
+      }
+      
+      tr.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${team1Display}</td>
+        <td class="center"><strong>${score1} - ${score2}</strong></td>
+        <td>${team2Display}</td>
+        <td class="center">${winnerText}</td>
+      `;
+      
+      games1v1Body.appendChild(tr);
+    });
+
+    games1v1Table.style.display = 'table';
+  }
+
+  // ---------- 2V2 GAMES FUNCTIONALITY ----------
+  function start2v2GamesRealtime() {
+    if (games2v2Unsub) { games2v2Unsub(); games2v2Unsub = null; }
+
+    try {
+      const gamesRef = db.collection('games_2v2');
+
+      games2v2Unsub = gamesRef.orderBy('createdAt', 'desc').limit(50).onSnapshot(
+        (snapshot) => { render2v2Games(snapshot); },
+        (error) => {
+          console.error('2v2 games snapshot error:', error);
+          games2v2Loading.style.display = 'none';
+          games2v2Empty.style.display = '';
+          games2v2Empty.textContent = 'Greška pri učitavanju igara.';
+        }
+      );
+    } catch (error) {
+      console.error('Error starting 2v2 games realtime:', error);
+      games2v2Loading.style.display = 'none';
+      games2v2Empty.style.display = '';
+      games2v2Empty.textContent = 'Greška pri učitavanju igara.';
+    }
+  }
+
+  function render2v2Games(snapshot) {
+    games2v2Loading.style.display = 'none';
+    games2v2Table.style.display = 'none';
+    games2v2Empty.style.display = 'none';
+
+    if (snapshot.empty) {
+      games2v2Empty.style.display = '';
+      games2v2Empty.textContent = 'Nema odigranih 2v2 igara.';
+      return;
+    }
+
+    games2v2Body.innerHTML = '';
+    
+    snapshot.forEach(doc => {
+      const game = doc.data();
+      const tr = document.createElement('tr');
+      
+      const dateVal = game.createdAt && game.createdAt.toDate ? game.createdAt.toDate() : null;
+      const dateStr = dateVal ? dateVal.toLocaleString('hr-HR', {dateStyle:'short', timeStyle:'short'}) : '—';
+      
+      const team1Display = game.team1Display || '—';
+      const team2Display = game.team2Display || '—';
+      const score1 = game.score1 || 0;
+      const score2 = game.score2 || 0;
+      
+      let winnerText = '—';
+      if (score1 > score2) {
+        winnerText = `<span style="color:var(--success);font-weight:600">${team1Display}</span>`;
+      } else if (score2 > score1) {
+        winnerText = `<span style="color:var(--success);font-weight:600">${team2Display}</span>`;
+      } else {
+        winnerText = '<span style="color:var(--muted)">Neriješeno</span>';
+      }
+      
+      tr.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${team1Display}</td>
+        <td class="center"><strong>${score1} - ${score2}</strong></td>
+        <td>${team2Display}</td>
+        <td class="center">${winnerText}</td>
+      `;
+      
+      games2v2Body.appendChild(tr);
+    });
+
+    games2v2Table.style.display = 'table';
+  }
+
+  // ---------- 3V3 GAMES FUNCTIONALITY ----------
+  function start3v3GamesRealtime() {
+    if (games3v3Unsub) { games3v3Unsub(); games3v3Unsub = null; }
+
+    try {
+      const gamesRef = db.collection('games_3v3');
+
+      games3v3Unsub = gamesRef.orderBy('createdAt', 'desc').limit(50).onSnapshot(
+        (snapshot) => { render3v3Games(snapshot); },
+        (error) => {
+          console.error('3v3 games snapshot error:', error);
+          games3v3Loading.style.display = 'none';
+          games3v3Empty.style.display = '';
+          games3v3Empty.textContent = 'Greška pri učitavanju igara.';
+        }
+      );
+    } catch (error) {
+      console.error('Error starting 3v3 games realtime:', error);
+      games3v3Loading.style.display = 'none';
+      games3v3Empty.style.display = '';
+      games3v3Empty.textContent = 'Greška pri učitavanju igara.';
+    }
+  }
+
+  function render3v3Games(snapshot) {
+    games3v3Loading.style.display = 'none';
+    games3v3Table.style.display = 'none';
+    games3v3Empty.style.display = 'none';
+
+    if (snapshot.empty) {
+      games3v3Empty.style.display = '';
+      games3v3Empty.textContent = 'Nema odigranih 3v3 igara.';
+      return;
+    }
+
+    games3v3Body.innerHTML = '';
+    
+    snapshot.forEach(doc => {
+      const game = doc.data();
+      const tr = document.createElement('tr');
+      
+      const dateVal = game.createdAt && game.createdAt.toDate ? game.createdAt.toDate() : null;
+      const dateStr = dateVal ? dateVal.toLocaleString('hr-HR', {dateStyle:'short', timeStyle:'short'}) : '—';
+      
+      const team1Display = game.team1Display || '—';
+      const team2Display = game.team2Display || '—';
+      const score1 = game.score1 || 0;
+      const score2 = game.score2 || 0;
+      
+      let winnerText = '—';
+      if (score1 > score2) {
+        winnerText = `<span style="color:var(--success);font-weight:600">${team1Display}</span>`;
+      } else if (score2 > score1) {
+        winnerText = `<span style="color:var(--success);font-weight:600">${team2Display}</span>`;
+      } else {
+        winnerText = '<span style="color:var(--muted)">Neriješeno</span>';
+      }
+      
+      tr.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${team1Display}</td>
+        <td class="center"><strong>${score1} - ${score2}</strong></td>
+        <td>${team2Display}</td>
+        <td class="center">${winnerText}</td>
+      `;
+      
+      games3v3Body.appendChild(tr);
+    });
+
+    games3v3Table.style.display = 'table';
+  }
+
   // ---------- LEADERBOARD FUNCTIONALITY ----------
   function startLeaderboardRealtime() {
-    // if already listening, detach first
     if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
 
     try {
-      const gamesRef = db.collection('games');
+      const gamesRef = db.collection('games_1v1');
 
-      // Listen to games collection
       leaderboardUnsub = gamesRef.onSnapshot(
         () => { computeAndRenderLeaderboard(); },
         (error) => {
           console.error('Leaderboard snapshot error:', error);
-          // Fallback to one-time load if realtime fails
           computeAndRenderLeaderboard();
         }
       );
 
-      // initial compute
       computeAndRenderLeaderboard();
     } catch (error) {
       console.error('Error starting leaderboard realtime:', error);
-      // Fallback to one-time load
       computeAndRenderLeaderboard();
     }
   }
@@ -1709,11 +1818,9 @@ function isStandalonePWA() {
       leaderboardEmpty.style.display = 'none';
       leaderboardBody.innerHTML = '';
 
-      // Start with fresh users map - don't pre-populate from users collection
       const usersMap = {};
 
-      // fetch games snapshot and calculate stats from games only
-      const gamesSnap = await db.collection('games').get();
+      const gamesSnap = await db.collection('games_1v1').get();
       let gameCount = 0;
       
       gamesSnap.forEach(docSnap => {
@@ -1724,7 +1831,6 @@ function isStandalonePWA() {
         if (!t1Key || !t2Key) return;
         gameCount++;
           
-        // Initialize players if they don't exist
         if (!usersMap[t1Key]) {
           usersMap[t1Key] = { 
             key: t1Key, 
@@ -1746,13 +1852,11 @@ function isStandalonePWA() {
           };
         }
           
-        // Add points from this game
         usersMap[t1Key].pointsFor += (g.score1 || 0);
         usersMap[t1Key].pointsAgainst += (g.score2 || 0);
         usersMap[t2Key].pointsFor += (g.score2 || 0);
         usersMap[t2Key].pointsAgainst += (g.score1 || 0);
           
-        // Add wins/losses
         if ((g.score1 || 0) > (g.score2 || 0)) { 
           usersMap[t1Key].wins += 1; 
           usersMap[t2Key].losses += 1; 
@@ -1770,7 +1874,6 @@ function isStandalonePWA() {
         return; 
       }
 
-      // Convert to array and sort by wins, then point difference
       const arr = Object.values(usersMap);
       arr.sort((a,b) => { 
         if ((b.wins||0) !== (a.wins||0)) return (b.wins||0)-(a.wins||0); 
@@ -1814,166 +1917,20 @@ function isStandalonePWA() {
       leaderboardLoading.style.display = 'none';
       leaderboardEmpty.style.display = '';
       if (error.code === 'permission-denied') {
-        leaderboardEmpty.textContent = 'Nemate dozvole za pristup leaderboardu. Kontaktirajte administratora.';
+        leaderboardEmpty.textContent = 'Nemate dozvole za pristup leaderboardu.';
       } else {
         leaderboardEmpty.textContent = 'Greška pri učitavanju leaderboarda.';
       }
     }
   }
 
-  // ---------- NOTIFICATIONS FUNCTIONALITY ----------
-  function startNotificationsRealtime() {
-    // if already listening, detach first
-    if (notificationsUnsub) { notificationsUnsub(); notificationsUnsub = null; }
-
-    try {
-      notificationsUnsub = db.collection('notifications')
-        .orderBy('createdAt', 'desc')
-        .limit(20)
-        .onSnapshot(
-          (snapshot) => { renderNotifications(snapshot); },
-          (error) => {
-            console.error('Notifications snapshot error:', error);
-            notificationsLoading.style.display = 'none';
-            notificationsEmpty.style.display = '';
-            notificationsEmpty.textContent = 'Greška pri učitavanju obavještenja.';
-          }
-        );
-    } catch (error) {
-      console.error('Error starting notifications realtime:', error);
-      notificationsLoading.style.display = 'none';
-      notificationsEmpty.style.display = '';
-      notificationsEmpty.textContent = 'Greška pri učitavanju obavještenja.';
-    }
-  }
-
-  function renderNotifications(snapshot) {
-    notificationsLoading.style.display = 'none';
-    notificationsList.style.display = 'none';
-    notificationsEmpty.style.display = 'none';
-
-    if (snapshot.empty) {
-      notificationsEmpty.style.display = '';
-      notificationsEmpty.textContent = 'Nema obavještenja.';
-      return;
-    }
-
-    notificationsList.innerHTML = '';
-    
-    snapshot.forEach(doc => {
-      const notification = doc.data();
-      const notificationEl = document.createElement('div');
-      notificationEl.style.cssText = `
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: var(--shadow);
-      `;
-
-      const date = notification.createdAt?.toDate ? 
-        notification.createdAt.toDate() : 
-        new Date(notification.createdAt?.seconds * 1000);
-      
-      const dateStr = date ? date.toLocaleString('hr-HR') : 'Nepoznato';
-
-      notificationEl.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-          <div>
-            <div style="font-weight: 600; margin-bottom: 4px;">${notification.message}</div>
-            <div class="small" style="color: var(--muted);">${dateStr}</div>
-          </div>
-        </div>
-      `;
-
-      notificationsList.appendChild(notificationEl);
-    });
-
-    notificationsList.style.display = 'block';
-  }
-
-  // ---------- GAMES LISTENER FOR NOTIFICATIONS ----------
-  function startGamesListener() {
-    if (gamesUnsub) { gamesUnsub(); gamesUnsub = null; }
-    
-    try {
-      const gamesRef = db.collection('games');
-      
-      gamesUnsub = gamesRef.orderBy('createdAt', 'desc').limit(1).onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach(change => {
-          if (change.type === 'added') {
-            const game = change.doc.data();
-            const gameId = change.doc.id;
-            
-            // Don't notify for the first load
-            if (game.createdAt && game.createdAt.toDate) {
-              const gameTime = game.createdAt.toDate();
-              const now = new Date();
-              const timeDiff = now.getTime() - gameTime.getTime();
-              
-              // Only notify if the game was created in the last 30 seconds
-              if (timeDiff < 30000) {
-                notifyNewGame(game, gameId);
-              }
-            }
-          }
-        });
-      }, (error) => {
-        console.error('Games listener error:', error);
-      });
-    } catch (error) {
-      console.error('Error starting games listener:', error);
-    }
-  }
-
-  // Notify about new game
-  async function notifyNewGame(game, gameId) {
-    try {
-      const team1Display = game.team1Display || game.team1 || 'Player 1';
-      const team2Display = game.team2Display || game.team2 || 'Player 2';
-      const score1 = game.score1 || 0;
-      const score2 = game.score2 || 0;
-      
-      const message = `Nova igra: ${team1Display} vs ${team2Display} (${score1}-${score2})`;
-      
-      // Create notification document
-      const notificationData = {
-        message: message,
-        gameId: gameId,
-        createdAt: firebase.firestore.Timestamp.now(),
-        responses: {},
-        type: 'game'
-      };
-      
-      await db.collection('notifications').add(notificationData);
-      console.log('Game notification created');
-      
-      // Show local notification
-      if (Notification.permission === 'granted') {
-        new Notification('Hoops', {
-          body: message,
-          icon: './assets/icon-192.png'
-        });
-      }
-      
-      // Show in-app notification
-      showInAppNotification('Hoops', message);
-      
-    } catch (error) {
-      console.error('Error creating game notification:', error);
-    }
-  }
-
   // ---------- PROFILE MODAL ----------
   function openProfileModal(userKey, isOwnProfile) {
-    // cleanup any previous subs
     if (profileUnsub1) { profileUnsub1(); profileUnsub1 = null; }
     if (profileUnsub2) { profileUnsub2(); profileUnsub2 = null; }
     modalContent.innerHTML = '<div class="small">Učitavanje...</div>'; 
     modalBackdrop.style.display = 'flex';
 
-    // create elements
     const header = document.createElement('div'); 
     const avatarLarge = document.createElement('div');
     avatarLarge.className = 'profile-avatar-large';
@@ -2002,7 +1959,7 @@ function isStandalonePWA() {
     `;
     
     const gamesTitle = document.createElement('h4');
-    gamesTitle.textContent = 'Recent Games';
+    gamesTitle.textContent = 'Recent 1v1 Games';
     gamesTitle.style.margin = '20px 0 12px';
     
     const gamesContainer = document.createElement('div'); 
@@ -2019,7 +1976,6 @@ function isStandalonePWA() {
     modalContent.appendChild(gamesTitle);
     modalContent.appendChild(gamesContainer);
 
-    // Try to lookup display name from users collection (one-time)
     (async ()=>{
       try{
         const usersRef = db.collection('users');
@@ -2046,8 +2002,7 @@ function isStandalonePWA() {
       }
     })();
 
-    // real-time listen for games where team1==userKey or team2==userKey and merge results
-    const gamesRef = db.collection('games');
+    const gamesRef = db.collection('games_1v1');
     
     const gamesMap = new Map();
 
@@ -2066,7 +2021,6 @@ function isStandalonePWA() {
         return; 
       }
       
-      // compute stats
       let wins=0, losses=0, pf=0, pa=0;
       const table = document.createElement('table'); 
       table.style.width='100%'; 
@@ -2110,7 +2064,7 @@ function isStandalonePWA() {
         }
         
         const tr=document.createElement('tr'); 
-        tr.innerHTML = `<td>${dateStr}</td><td>${oppName}</td><td>${myScore} — ${oppScore}</td><td style="text-align:center">${result}</td>`; 
+        tr.innerHTML = `<td>${dateStr}</td><td>${oppName}</td><td>${myScore} – ${oppScore}</td><td style="text-align:center">${result}</td>`; 
         tbody.appendChild(tr); 
       }); 
       
@@ -2140,7 +2094,6 @@ function isStandalonePWA() {
     });
   }
 
-  // close modal handler
   modalClose.addEventListener('click', () => { 
     modalBackdrop.style.display = 'none'; 
     modalContent.innerHTML=''; 
@@ -2159,7 +2112,6 @@ function isStandalonePWA() {
     isOnline = true;
     console.log('Connection restored');
     offlineIndicator.style.display = 'none';
-    // Reload data when back online
     if (currentUser) {
       loadReservations().then(() => renderCalendar());
     }
@@ -2188,80 +2140,58 @@ function isStandalonePWA() {
     }
   });
 
-  // Hide install button if app is already installed
   window.addEventListener('appinstalled', () => {
     installBtn.style.display = 'none';
     console.log('PWA was installed');
   });
 
-  // Request notification permission on first load
-  if (notificationPermission === 'default') {
-    Notification.requestPermission().then(permission => {
-      notificationPermission = permission;
-      console.log('Notification permission:', permission);
-    });
-  }
-
   // ---------- SERVICE WORKER REGISTRATION ----------
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      // Register main service worker
       navigator.serviceWorker.register('./service-worker.js')
         .then(reg => {
           console.log('Service Worker registered successfully:', reg);
           
-          // Check for updates every 60 seconds
           setInterval(() => {
             reg.update();
           }, 60000);
           
-          // Also check on focus (when user returns to app)
           window.addEventListener('focus', () => {
             reg.update();
           });
           
-          // Listen for updates
           reg.addEventListener('updatefound', () => {
             const newServiceWorker = reg.installing;
             newServiceWorker.addEventListener('statechange', () => {
               if (newServiceWorker.state === 'installed') {
                 if (navigator.serviceWorker.controller) {
-                  // New service worker is available
                   showUpdateNotification();
                 } else {
-                  // First time installation
                   console.log('Service Worker installed for the first time');
                 }
               }
             });
           });
           
-          // Listen for controller change (when new SW takes control)
           navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('New service worker is controlling the page');
-            // Force reload to get the latest version
             window.location.reload();
           });
         })
         .catch(err => {
           console.error('Service Worker registration failed:', err);
-          console.warn('PWA features may not work properly. Please check your internet connection.');
         });
       
-      // Register Firebase messaging service worker
-      navigator.serviceWorker.register('./firebase-messaging-sw.js')
+      navigator.serviceWorker.register('./OneSignalSDKWorker.js')
         .then(reg => {
-          console.log('Firebase Messaging Service Worker registered:', reg);
+          console.log('OneSignal Service Worker registered:', reg);
         })
         .catch(err => {
-          console.error('Firebase Messaging Service Worker registration failed:', err);
+          console.error('OneSignal Service Worker registration failed:', err);
         });
     });
-  } else {
-    console.warn('Service Workers not supported in this browser');
   }
 
-  // Show update notification
   function showUpdateNotification() {
     const updateBanner = document.createElement('div');
     updateBanner.className = 'update-banner';
@@ -2274,7 +2204,6 @@ function isStandalonePWA() {
     
     document.getElementById('updateNowBtn').addEventListener('click', () => {
       console.log('User clicked update button');
-      // Reload to get new version
       window.location.reload();
     });
   }
