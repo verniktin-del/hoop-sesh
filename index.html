@@ -1,25 +1,17 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-  <meta charset="utf-8" />
-  <title>Rezervacija termina</title>
+  <meta charset="UTF-8">
+  <title>Admin - Log Games</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1D428A">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Hoops">
+  <meta name="apple-mobile-web-app-title" content="Hoops Admin">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="icon" href="assets/icon-192.png">
-
-  <!-- Firebase SDKs - Compat version -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <!-- OneSignal SDK -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
   <style>
     :root{
@@ -27,441 +19,68 @@
       --accent:#FFC72C;
       --muted:#6b7280;
       --card:#ffffff;
-      --bg:#f8fafc;
-      --success:#10b981;
-      --warning:#f59e0b;
-      --error:#ef4444;
-      --border:#e2e8f0;
-      --shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-lg:0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --gradient:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg:#f5f7fb;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family:Inter,Arial,Helvetica,sans-serif;
       background:var(--bg);
-      color:#1f2937;
+      color:#111;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-      line-height:1.6;
     }
 
-    /* Centered login */
     #loginWrapper{
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
       padding:24px;
-      background:var(--gradient);
     }
     #loginBox{
       width:420px;
       max-width:95%;
       background:var(--card);
-      border-radius:20px;
-      padding:40px;
-      box-shadow:var(--shadow-lg);
+      border-radius:12px;
+      padding:28px;
+      box-shadow:0 10px 30px rgba(20,30,60,0.08);
       text-align:center;
-      border:1px solid var(--border);
-      backdrop-filter:blur(10px);
     }
-    #loginBox h1{
-      margin:0 0 8px;
-      font-size:28px;
-      color:var(--brand);
-      font-weight:700;
-      background:var(--gradient);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-    }
-    #loginBox p{
-      margin:0 0 32px;
-      color:var(--muted);
-      font-size:16px;
-    }
+    #loginBox h1{margin:0 0 8px;font-size:20px;color:var(--brand)}
+    #loginBox p{margin:0 0 20px;color:var(--muted)}
 
     #googleLoginBtn{
       display:inline-flex;
       align-items:center;
-      gap:12px;
-      padding:16px 24px;
+      gap:10px;
+      padding:12px 16px;
       background:var(--brand);
-      color:white;
-      border:none;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:600;
-      font-size:16px;
-      transition:all 0.3s ease;
-      box-shadow:var(--shadow);
-    }
-    #googleLoginBtn:hover{
-      transform:translateY(-2px);
-      box-shadow:var(--shadow-lg);
-      background:#1a3a7a;
-    }
-    #googleLoginBtn:disabled{
-      opacity:0.6;
-      cursor:not-allowed;
-      transform:none;
-    }
-    #googleLoginBtn img{width:20px;height:20px}
-
-    /* App layout */
-    #app{
-      display:none;
-      max-width:100vw;
-      margin:0 auto;
-      padding:0;
-      min-height:100vh;
-      background:var(--bg);
-      width:100%;
-      overflow-x:hidden;
-    }
-    header.appHeader{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:16px 20px;
-      background:var(--card);
-      border-bottom:1px solid var(--border);
-      box-shadow:var(--shadow);
-      position:sticky;
-      top:0;
-      z-index:100;
-      width:100%;
-      box-sizing:border-box;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .brand h2{
-      margin:0;
-      color:var(--brand);
-      font-size:24px;
-      font-weight:700;
-      background:var(--gradient);
-      -webkit-background-clip:text;
-      -webkit-text-fill-color:transparent;
-      background-clip:text;
-    }
-    .userBar{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-    .profileBtn{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      background:var(--bg);
-      border:1px solid var(--border);
-      padding:8px 12px;
-      border-radius:20px;
-      cursor:pointer;
-      font-weight:500;
-      transition:all 0.3s ease;
-    }
-    .profileBtn:hover{
-      background:var(--border);
-      transform:translateY(-1px);
-    }
-    .profileAvatar{
-      width:32px;
-      height:32px;
-      border-radius:50%;
-      background:var(--gradient);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:white;
-      font-weight:700;
-      font-size:14px;
-    }
-    .logoutBtn{
-      background:var(--error);
-      color:white;
-      border:none;
-      padding:10px 16px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
-      transition:all 0.3s ease;
-    }
-    .logoutBtn:hover{
-      background:#dc2626;
-      transform:translateY(-1px);
-    }
-
-    /* Main content */
-    .main{
-      display:flex;
-      gap:16px;
-      align-items:flex-start;
-      padding:0 20px 20px 20px;
-      width:100%;
-      box-sizing:border-box;
-      flex-wrap:wrap;
-    }
-    .calendarCard{
-      background:var(--card);
-      border-radius:16px;
-      padding:20px;
-      flex: 1 1 100%;
-      min-width:0;
-      box-shadow:var(--shadow);
-      border:1px solid var(--border);
-      width:100%;
-      box-sizing:border-box;
-    }
-    .controls{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      margin-bottom:16px;
-      flex-wrap:wrap;
-    }
-    .monthNav{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .navBtn{
-      padding:8px 12px;
-      border-radius:8px;
-      border:none;
-      cursor:pointer;
-      background:#efefef;
-      font-size:14px;
-      white-space:nowrap;
-    }
-    .monthTitle{
-      font-weight:700;
-      color:#0b1220;
-      font-size:16px;
-      white-space:nowrap;
-    }
-
-    .weekdays{
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:2px;
-      margin-top:12px;
-    }
-    .weekday{
-      text-align:center;
-      padding:8px 2px;
-      font-weight:700;
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:2px;
-      margin-top:8px;
-    }
-    .day{
-      min-height:60px;
-      border-radius:6px;
-      border:1px solid #e6e9ef;
-      background:white;
-      display:flex;
-      flex-direction:column;
-      padding:4px;
-      justify-content:flex-start;
-      gap:4px;
-      position:relative;
-      cursor:pointer;
-      font-size:12px;
-    }
-    .day.empty{background:transparent;border:none;cursor:default}
-    .day .num{
-      font-weight:700;
-      font-size:14px;
-    }
-    .day .items{
-      font-size:10px;
-      color:#222;
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      overflow:hidden;
-    }
-    .badge{
-      display:inline-block;
-      padding:2px 4px;
-      border-radius:4px;
-      font-size:10px;
-    }
-
-    .available{background:linear-gradient(90deg,#e9eefb,#f7f9ff)}
-    .mine{background:#e6fbff;border:2px solid #6BCBFF}
-    .reserved-other{background:linear-gradient(90deg,#fff4e0,#fff8f0)}
-    .past{opacity:0.5;pointer-events:none}
-
-    /* right panel - form */
-    .formCard{
-      background:var(--card);
-      border-radius:12px;
-      padding:20px;
-      width:100%;
-      box-shadow:var(--shadow);
-      border:1px solid var(--border);
-      flex:1 1 100%;
-      box-sizing:border-box;
-      margin-top:16px;
-    }
-    .formCard h3{margin-top:0}
-    .formRow{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
-    input[type="time"],select,textarea{
-      padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;width:100%;
-    }
-    .primaryBtn{background:var(--brand);color:var(--accent);border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:700}
-    .secondary{
-      background:var(--bg);
-      border:1px solid var(--border);
-      padding:10px 16px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:500;
-      transition:all 0.3s ease;
-    }
-
-    .small{font-size:13px;color:var(--muted)}
-
-    /* Leaderboard & Games table styles */
-    .games-container{
-      width:100%;
-      overflow-x:auto;
-      margin-top:16px;
-      border-radius:8px;
-      border:1px solid var(--border);
-    }
-    .games-table{
-      width:100%;
-      border-collapse:collapse;
-      background:var(--card);
-      min-width:300px;
-    }
-    .games-table th{
-      background:var(--brand);
-      color:white;
-      padding:12px 8px;
-      text-align:left;
-      font-weight:600;
-      font-size:14px;
-      border-bottom:2px solid var(--accent);
-    }
-    .games-table th.center{
-      text-align:center;
-    }
-    .games-table td{
-      padding:12px 8px;
-      border-bottom:1px solid var(--border);
-      font-size:14px;
-      vertical-align:middle;
-    }
-    .games-table tr:hover{
-      background:var(--bg);
-    }
-    .games-table .center{
-      text-align:center;
-    }
-    .profile-link{
-      color:var(--brand);
-      text-decoration:none;
-      font-weight:600;
-      transition:color 0.3s ease;
-    }
-    .profile-link:hover{
       color:var(--accent);
-      text-decoration:underline;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:15px;
+    }
+    #googleLoginBtn img{width:18px;height:18px}
+
+    #adminWrapper{
+      display:none;
+      max-width:900px;
+      margin:20px auto;
+      padding:20px;
     }
 
-    /* tooltip pre wrapping */
-    .tooltip{
-      white-space:pre-line;
-      font-size:13px;
-      color:#fff;
-      background:#222;
-      padding:6px 8px;border-radius:6px;
-    }
-
-    .center { text-align:center }
-
-    /* Modal styles */
-    .modal-backdrop{
-      position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center;z-index:1500;
-    }
-    .modal{background:#fff;border-radius:12px;padding:20px;max-width:900px;width:95%;max-height:85vh;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,0.25);}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
-    .closeBtn{background:#eee;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-
-    /* Profile modal specific */
-    .profile-avatar-large{
-      width:80px;
-      height:80px;
-      border-radius:50%;
-      background:var(--gradient);
+    .adminHeader{
       display:flex;
       align-items:center;
-      justify-content:center;
-      color:white;
-      font-weight:700;
-      font-size:32px;
-      margin:0 auto 16px;
-    }
-    .profile-stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
+      justify-content:space-between;
       gap:16px;
-      margin:20px 0;
+      margin-bottom:20px;
     }
-    .stat-box{
-      background:var(--bg);
-      padding:16px;
-      border-radius:8px;
-      text-align:center;
-    }
-    .stat-value{
-      font-size:24px;
-      font-weight:700;
-      color:var(--brand);
-    }
-    .stat-label{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:4px;
-    }
-
-    /* Offline indicator */
-    .offline-indicator{
-      position:fixed;
-      top:0;
-      left:0;
-      right:0;
-      background:#ff6b6b;
-      color:white;
-      text-align:center;
-      padding:8px;
-      font-size:14px;
-      z-index:9999;
-      display:none;
-    }
-
-    /* PWA Install button */
-    .install-btn{
+    .brand h2{margin:0;color:var(--brand)}
+    .logoutBtn{
       background:var(--accent);
       color:var(--brand);
       border:none;
@@ -469,25 +88,16 @@
       border-radius:8px;
       cursor:pointer;
       font-weight:700;
-      font-size:14px;
-      display:none;
-    }
-    .install-btn:hover{
-      background:#e6b800;
     }
 
-    /* Tab navigation */
     .tab-nav{
       display:flex;
-      gap:4px;
-      margin:16px 20px;
+      gap:8px;
+      margin-bottom:24px;
       background:var(--card);
       padding:8px;
       border-radius:12px;
-      box-shadow:var(--shadow);
-      border:1px solid var(--border);
-      width:calc(100% - 40px);
-      box-sizing:border-box;
+      box-shadow:0 4px 12px rgba(20,30,60,0.06);
       overflow-x:auto;
     }
     .tab-btn{
@@ -499,18 +109,16 @@
       color:var(--muted);
       border-radius:8px;
       transition:all 0.3s ease;
-      position:relative;
-      flex:1;
       white-space:nowrap;
+      flex:1;
     }
     .tab-btn.active{
       color:var(--brand);
       background:var(--bg);
-      box-shadow:var(--shadow);
+      box-shadow:0 2px 8px rgba(20,30,60,0.1);
     }
     .tab-btn:hover:not(.active){
       background:var(--bg);
-      color:var(--brand);
     }
     .tab-content{
       display:none;
@@ -519,380 +127,435 @@
       display:block;
     }
 
-    /* Notification animations */
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+    .formCard{
+      background:var(--card);
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 6px 18px rgba(20,30,60,0.06);
+      margin-bottom:20px;
     }
-
-    /* Update banner */
-    .update-banner{
-      position:fixed;
-      top:0;
-      left:0;
-      right:0;
-      background:var(--gradient);
-      color:white;
-      padding:12px 16px;
-      text-align:center;
-      z-index:10000;
-      box-shadow:0 4px 12px rgba(0,0,0,0.15);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      gap:12px;
-      font-weight:600;
+    .formCard h3{margin-top:0}
+    .formRow{display:flex;flex-direction:column;gap:8px;margin-bottom:15px}
+    input[type="text"], input[type="number"], select{
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #e6e9ef;
       font-size:14px;
+      width:100%;
     }
-    .update-banner button{
-      background:rgba(255,255,255,0.2);
-      border:1px solid rgba(255,255,255,0.3);
-      color:white;
-      padding:6px 12px;
+    .primaryBtn{
+      background:var(--brand);
+      color:var(--accent);
+      border:none;
+      padding:12px 20px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:16px;
+    }
+    .secondaryBtn{
+      background:#e5e7eb;
+      color:#374151;
+      border:none;
+      padding:8px 12px;
       border-radius:6px;
       cursor:pointer;
       font-weight:600;
-      font-size:12px;
+      font-size:13px;
+      margin-left:8px;
     }
 
-    /* Mobile responsive design */
+    .leaderboardCard{
+      background:var(--card);
+      border-radius:12px;
+      padding:20px;
+      box-shadow:0 6px 18px rgba(20,30,60,0.06);
+    }
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid #ddd;}
+    th{background:var(--brand);color:var(--accent);}
+    .center{text-align:center;}
+    .small{font-size:13px;color:var(--muted);}
+    
+    .player-group{
+      background:var(--bg);
+      padding:12px;
+      border-radius:8px;
+      margin-bottom:12px;
+    }
+    .player-group-title{
+      font-weight:600;
+      color:var(--brand);
+      margin-bottom:8px;
+      font-size:14px;
+    }
+    .player-inputs{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .player-with-points{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:8px;
+      align-items:end;
+    }
+    .points-label{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
+
     @media (max-width:768px){
-      .main{
-        flex-direction:column;
-        padding:0 16px 16px 16px;
-        gap:12px;
-      }
-      .calendarCard{
+      #adminWrapper{
         padding:16px;
-      }
-      .formCard{
-        margin-top:0;
-        padding:16px;
-      }
-      .tab-nav{
-        margin:12px 16px;
-        width:calc(100% - 32px);
       }
       .tab-btn{
         padding:10px 16px;
         font-size:14px;
-      }
-      .controls{
-        flex-direction:column;
-        align-items:stretch;
-        gap:12px;
-      }
-      .monthNav{
-        justify-content:center;
-      }
-      .navBtn{
-        flex:1;
-        text-align:center;
-      }
-      .day{
-        min-height:50px;
-        padding:3px;
-      }
-      .day .num{
-        font-size:12px;
-      }
-      .day .items{
-        font-size:9px;
-      }
-      .userBar{
-        flex-direction:column;
-        gap:8px;
-        align-items:stretch;
-      }
-      .modal{
-        width:95%;
-        margin:10px;
-      }
-      header.appHeader{
-        padding:12px 16px;
-        flex-wrap:wrap;
-      }
-      .brand h2{
-        font-size:20px;
-      }
-      .games-container{
-        margin-top:12px;
-      }
-      .games-table th{
-        padding:10px 6px;
-        font-size:12px;
-      }
-      .games-table td{
-        padding:10px 6px;
-        font-size:12px;
-      }
-      .profile-stats{
-        grid-template-columns:1fr;
-        gap:12px;
-      }
-    }
-
-    @media (max-width:480px){
-      .day{
-        min-height:45px;
-        font-size:10px;
-      }
-      .day .num{
-        font-size:11px;
-      }
-      .day .items{
-        font-size:8px;
-      }
-      .weekday{
-        font-size:10px;
-        padding:6px 1px;
-      }
-      .navBtn{
-        padding:6px 8px;
-        font-size:12px;
-      }
-      .monthTitle{
-        font-size:14px;
-      }
-      .games-table th{
-        padding:8px 4px;
-        font-size:11px;
-      }
-      .games-table td{
-        padding:8px 4px;
-        font-size:11px;
-      }
-      .games-table{
-        min-width:280px;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN -->
-  <div id="loginWrapper">
-    <div id="loginBox" role="dialog" aria-labelledby="loginTitle">
-      <h1 id="loginTitle">Prijava</h1>
-      <p>Prijavite se putem Google računa da biste rezervirali teren.</p>
-      <button id="googleLoginBtn">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />
-        Prijavi se s Googleom
-      </button>
-      <div id="loginLoading" style="display: none; margin-top: 16px; color: var(--muted);">
-        Provjeravam prijavu...
-      </div>
+<div id="loginWrapper">
+  <div id="loginBox">
+    <h1>Admin - Log Games</h1>
+    <p>Prijavite se da biste mogli logirati igre.</p>
+    <button id="googleLoginBtn">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />
+      Prijavi se s Googleom
+    </button>
+  </div>
+</div>
+
+<div id="adminWrapper">
+  <header class="adminHeader">
+    <div class="brand">
+      <h2>Hoops Admin</h2>
+      <div class="small">Log Games & Leaderboard</div>
+    </div>
+    <div>
+      <div class="small" id="userEmail">—</div>
+      <button id="logoutBtn" class="logoutBtn">Odjava</button>
+    </div>
+  </header>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="1v1">🏀 1v1</button>
+    <button class="tab-btn" data-tab="2v2">👥 2v2</button>
+    <button class="tab-btn" data-tab="3v3">👪 3v3</button>
+    <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
+  </div>
+
+  <div id="1v1Tab" class="tab-content active">
+    <div class="formCard">
+      <h3>Log 1v1 Game</h3>
+      <form id="log1v1Form">
+        <div class="formRow">
+          <label>Player 1</label>
+          <select id="player1_1v1" required>
+            <option value="">-- select player --</option>
+          </select>
+          <input type="text" id="player1New_1v1" placeholder="Enter new player name" style="display:none;">
+        </div>
+
+        <div class="formRow">
+          <label>Score 1</label>
+          <input type="number" id="score1_1v1" placeholder="Player 1 Score" required>
+        </div>
+
+        <div class="formRow">
+          <label>Player 2</label>
+          <select id="player2_1v1" required>
+            <option value="">-- select player --</option>
+          </select>
+          <input type="text" id="player2New_1v1" placeholder="Enter new player name" style="display:none;">
+        </div>
+
+        <div class="formRow">
+          <label>Score 2</label>
+          <input type="number" id="score2_1v1" placeholder="Player 2 Score" required>
+        </div>
+
+        <button type="submit" class="primaryBtn">Log 1v1 Game</button>
+      </form>
+    </div>
+
+    <div class="leaderboardCard">
+      <h3>Recent 1v1 Games</h3>
+      <div id="games1v1Loading" class="small">Učitavanje...</div>
+      <table id="games1v1Table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Player 1</th>
+            <th class="center">Score</th>
+            <th>Player 2</th>
+            <th class="center">Winner</th>
+          </tr>
+        </thead>
+        <tbody id="games1v1Body"></tbody>
+      </table>
+      <div id="games1v1Empty" class="small" style="display:none">Nema odigranih 1v1 igara.</div>
     </div>
   </div>
 
-  <!-- Offline indicator -->
-  <div id="offlineIndicator" class="offline-indicator">
-    Nema internetske veze - radite offline
-  </div>
-
-  <!-- APP -->
-  <div id="app">
-    <header class="appHeader">
-      <div class="brand">
-        <h2>Hoops</h2>
-        <div class="small">Rezervacije & Igre</div>
-      </div>
-
-      <div class="userBar">
-        <button id="profileBtn" class="profileBtn">
-          <div class="profileAvatar">U</div>
-          <span class="profileName">User</span>
-        </button>
-        <button id="installBtn" class="install-btn">📱 Instaliraj App</button>
-        <button id="logoutBtn" class="logoutBtn">Odjava</button>
-      </div>
-    </header>
-
-    <main class="main">
-      <!-- Tab Navigation -->
-      <div class="tab-nav">
-        <button class="tab-btn active" data-tab="calendar">📅 Kalendar</button>
-        <button class="tab-btn" data-tab="1v1">🏀 1v1</button>
-        <button class="tab-btn" data-tab="2v2">👥 2v2</button>
-        <button class="tab-btn" data-tab="3v3">👪 3v3</button>
-        <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
-      </div>
-
-      <!-- Calendar Tab -->
-      <div id="calendarTab" class="tab-content active">
-        <div class="main">
-      <section class="calendarCard" aria-label="Kalendar">
-        <div class="controls">
-          <div class="monthNav">
-            <button id="prevMonth" class="navBtn">&lt; Prethodni</button>
-            <div class="monthTitle" id="monthTitle">Rujan 2025</div>
-            <button id="nextMonth" class="navBtn">Sljedeći &gt;</button>
+  <div id="2v2Tab" class="tab-content">
+    <div class="formCard">
+      <h3>Log 2v2 Game</h3>
+      <form id="log2v2Form">
+        <div class="player-group">
+          <div class="player-group-title">Team 1</div>
+          <div class="player-inputs">
+            <div class="player-with-points">
+              <div>
+                <select id="player1_2v2" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player1New_2v2" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player1Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+            
+            <div class="player-with-points">
+              <div>
+                <select id="player2_2v2" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player2New_2v2" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player2Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
           </div>
-          <div class="small">Kliknite dan za rezervaciju ili pregled</div>
         </div>
 
-        <div class="weekdays" id="weekdays"></div>
-        <div class="grid" id="daysGrid" role="grid"></div>
-      </section>
-
-      <aside class="formCard" aria-label="Forma za rezervaciju">
-        <h3>Rezerviraj termin</h3>
-        <div class="small">Odabrani datum: <span id="selectedDateText">—</span></div>
-
-        <form id="reservationForm">
-          <div class="formRow">
-            <label class="small">Vrijeme</label>
-            <input type="time" id="timeInput" required />
-          </div>
-
-          <div class="formRow">
-            <label class="small">Teren</label>
-            <select id="terenSelect" required>
-              <option value="">Odaberite teren</option>
-              <option>Jadran</option>
-              <option>Contadina</option>
-              <option>Secrete</option>
-              <option>Maj</option>
-            </select>
-          </div>
-
-          <div style="display:flex;gap:8px">
-            <button type="submit" class="primaryBtn">Rezerviraj</button>
-            <button type="button" id="cancelBtn" class="secondary">Odustani</button>
-          </div>
-
-          <div style="margin-top:12px" id="formMsg" class="small"></div>
-        </form>
-      </aside>
+        <div class="formRow">
+          <label>Team 1 Score (Total)</label>
+          <input type="number" id="score1_2v2" placeholder="Team 1 Score" required readonly>
         </div>
-      </div>
 
-      <!-- 1v1 Games Tab -->
-      <div id="1v1Tab" class="tab-content">
-        <section class="calendarCard" aria-label="1v1 Games">
-          <h3>🏀 1v1 Games</h3>
-          <div id="games1v1Loading" class="small">Učitavanje...</div>
-
-          <div class="games-container">
-            <table id="games1v1Table" class="games-table" style="display:none;">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Player 1</th>
-                  <th class="center">Score</th>
-                  <th>Player 2</th>
-                  <th class="center">Winner</th>
-                </tr>
-              </thead>
-              <tbody id="games1v1Body"></tbody>
-            </table>
+        <div class="player-group">
+          <div class="player-group-title">Team 2</div>
+          <div class="player-inputs">
+            <div class="player-with-points">
+              <div>
+                <select id="player3_2v2" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player3New_2v2" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player3Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+            
+            <div class="player-with-points">
+              <div>
+                <select id="player4_2v2" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player4New_2v2" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player4Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
           </div>
-
-          <div id="games1v1Empty" class="small" style="display:none">Nema odigranih 1v1 igara.</div>
-        </section>
-      </div>
-
-      <!-- 2v2 Games Tab -->
-      <div id="2v2Tab" class="tab-content">
-        <section class="calendarCard" aria-label="2v2 Games">
-          <h3>👥 2v2 Games</h3>
-          <div id="games2v2Loading" class="small">Učitavanje...</div>
-
-          <div class="games-container">
-            <table id="games2v2Table" class="games-table" style="display:none;">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Team 1</th>
-                  <th class="center">Score</th>
-                  <th>Team 2</th>
-                  <th class="center">Winner</th>
-                </tr>
-              </thead>
-              <tbody id="games2v2Body"></tbody>
-            </table>
-          </div>
-
-          <div id="games2v2Empty" class="small" style="display:none">Nema odigranih 2v2 igara.</div>
-        </section>
-      </div>
-
-      <!-- 3v3 Games Tab -->
-      <div id="3v3Tab" class="tab-content">
-        <section class="calendarCard" aria-label="3v3 Games">
-          <h3>👪 3v3 Games</h3>
-          <div id="games3v3Loading" class="small">Učitavanje...</div>
-
-          <div class="games-container">
-            <table id="games3v3Table" class="games-table" style="display:none;">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Team 1</th>
-                  <th class="center">Score</th>
-                  <th>Team 2</th>
-                  <th class="center">Winner</th>
-                </tr>
-              </thead>
-              <tbody id="games3v3Body"></tbody>
-            </table>
-          </div>
-
-          <div id="games3v3Empty" class="small" style="display:none">Nema odigranih 3v3 igara.</div>
-        </section>
-      </div>
-
-      <!-- Leaderboard Tab -->
-      <div id="leaderboardTab" class="tab-content">
-        <section class="calendarCard" aria-label="Leaderboard">
-          <h3>🏆 Leaderboard (1v1)</h3>
-          <div id="leaderboardLoading" class="small">Učitavanje...</div>
-
-          <div class="games-container">
-            <table id="leaderboardTable" class="games-table" style="display:none;">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th class="center">Wins</th>
-                  <th class="center">Losses</th>
-                  <th class="center">Diff</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboardBody"></tbody>
-            </table>
-          </div>
-
-          <div id="leaderboardEmpty" class="small" style="display:none">Nema odigranih igara za prikaz.</div>
-          <div style="margin-top:8px;" class="small">Scores are calculated from logged 1v1 games only.</div>
-        </section>
-      </div>
-
-    </main>
-  </div>
-
-  <!-- Modal backdrop for profile -->
-  <div id="modalBackdrop" class="modal-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-header">
-        <h2 id="modalTitle">Profil igrača</h2>
-        <div>
-          <button id="modalClose" class="closeBtn">Zatvori</button>
         </div>
-      </div>
-      <div id="modalContent"></div>
+
+        <div class="formRow">
+          <label>Team 2 Score (Total)</label>
+          <input type="number" id="score2_2v2" placeholder="Team 2 Score" required readonly>
+        </div>
+
+        <button type="submit" class="primaryBtn">Log 2v2 Game</button>
+      </form>
+    </div>
+
+    <div class="leaderboardCard">
+      <h3>Recent 2v2 Games</h3>
+      <div id="games2v2Loading" class="small">Učitavanje...</div>
+      <table id="games2v2Table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Team 1</th>
+            <th class="center">Score</th>
+            <th>Team 2</th>
+            <th class="center">Winner</th>
+          </tr>
+        </thead>
+        <tbody id="games2v2Body"></tbody>
+      </table>
+      <div id="games2v2Empty" class="small" style="display:none">Nema odigranih 2v2 igara.</div>
     </div>
   </div>
 
-<script>
-  console.log('Script starting...');
-  
-  // ---------- FIREBASE CONFIG AND INITIALIZATION ----------
+  <div id="3v3Tab" class="tab-content">
+    <div class="formCard">
+      <h3>Log 3v3 Game</h3>
+      <form id="log3v3Form">
+        <div class="player-group">
+          <div class="player-group-title">Team 1</div>
+          <div class="player-inputs">
+            <div class="player-with-points">
+              <div>
+                <select id="player1_3v3" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player1New_3v3" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player1Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+            
+            <div class="player-with-points">
+              <div>
+                <select id="player2_3v3" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player2New_3v3" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player2Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+            
+            <div class="player-with-points">
+              <div>
+                <select id="player3_3v3" required>
+                  <option value="">-- select player 3 --</option>
+                </select>
+                <input type="text" id="player3New_3v3" placeholder="Enter new player 3 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player3Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formRow">
+          <label>Team 1 Score (Total)</label>
+          <input type="number" id="score1_3v3" placeholder="Team 1 Score" required readonly>
+        </div>
+
+        <div class="player-group">
+          <div class="player-group-title">Team 2</div>
+          <div class="player-inputs">
+            <div class="player-with-points">
+              <div>
+                <select id="player4_3v3" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player4New_3v3" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player4Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+            
+            <div class="player-with-points">
+              <div>
+                <select id="player5_3v3" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player5New_3v3" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player5Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+            
+            <div class="player-with-points">
+              <div>
+                <select id="player6_3v3" required>
+                  <option value="">-- select player 3 --</option>
+                </select>
+                <input type="text" id="player6New_3v3" placeholder="Enter new player 3 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player6Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formRow">
+          <label>Team 2 Score (Total)</label>
+          <input type="number" id="score2_3v3" placeholder="Team 2 Score" required readonly>
+        </div>
+
+        <button type="submit" class="primaryBtn">Log 3v3 Game</button>
+      </form>
+    </div>
+
+    <div class="leaderboardCard">
+      <h3>Recent 3v3 Games</h3>
+      <div id="games3v3Loading" class="small">Učitavanje...</div>
+      <table id="games3v3Table" style="display:none;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Team 1</th>
+            <th class="center">Score</th>
+            <th>Team 2</th>
+            <th class="center">Winner</th>
+          </tr>
+        </thead>
+        <tbody id="games3v3Body"></tbody>
+      </table>
+      <div id="games3v3Empty" class="small" style="display:none">Nema odigranih 3v3 igara.</div>
+    </div>
+  </div>
+
+  <div id="leaderboardTab" class="tab-content">
+    <div class="leaderboardCard">
+      <h3>1v1 Leaderboard</h3>
+      <div id="leaderboardLoading" class="small">Učitavanje...</div>
+      <table id="leaderboardTable" style="display:none;">
+        <thead>
+          <tr>
+            <th style="width:60px" class="center">#</th>
+            <th>Name</th>
+            <th class="center">Wins</th>
+            <th class="center">Losses</th>
+            <th class="center">Point Diff</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+      <div id="leaderboardEmpty" class="small" style="display:none">Nema odigranih igara za prikaz.</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+  import { 
+    getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut 
+  } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+  import { 
+    getFirestore, collection, getDocs, doc, addDoc
+  } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyAnFYrebR69a2rmYeT-TWrX1RB_Tzsh3Tk",
     authDomain: "hoops-165ec.firebaseapp.com",
@@ -902,68 +565,21 @@
     appId: "1:563400604791:web:50183bcf65de09bd019a72",
     measurementId: "G-C3YPHXZCXN"
   };
+  
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  // Initialize OneSignal
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "4b47aa4a-a11e-4f44-bab0-874fcfdf8e3f",
-    });
-    
-    console.log('OneSignal initialized');
-    
-    // Listen for notification permission
-    OneSignal.Notifications.addEventListener('permissionChange', (granted) => {
-      console.log('Notification permission changed:', granted);
-    });
-    
-    // Request permission
-    const permission = await OneSignal.Notifications.permission;
-    if (!permission) {
-      console.log('Requesting notification permission...');
-      await OneSignal.Notifications.requestPermission();
-    }
-  });
-
-  // Set authentication persistence to LOCAL
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .then(() => {
-      console.log('Auth persistence set to LOCAL');
-    })
-    .catch((error) => {
-      console.error('Error setting auth persistence:', error);
-    });
-
-  // ---------- DOM ELEMENT REFERENCES ----------
   const loginWrapper = document.getElementById("loginWrapper");
-  const loginBox = document.getElementById("loginBox");
-  const googleLoginBtn = document.getElementById("googleLoginBtn");
-  const loginLoading = document.getElementById("loginLoading");
-
-  const appRoot = document.getElementById("app");
-  const profileBtn = document.getElementById("profileBtn");
+  const adminWrapper = document.getElementById("adminWrapper");
+  const loginBtn = document.getElementById("googleLoginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
-  const installBtn = document.getElementById("installBtn");
+  const userEmail = document.getElementById("userEmail");
 
-  const weekdaysContainer = document.getElementById("weekdays");
-  const daysGrid = document.getElementById("daysGrid");
-  const monthTitle = document.getElementById("monthTitle");
-  const prevMonthBtn = document.getElementById("prevMonth");
-  const nextMonthBtn = document.getElementById("nextMonth");
+  const log1v1Form = document.getElementById("log1v1Form");
+  const log2v2Form = document.getElementById("log2v2Form");
+  const log3v3Form = document.getElementById("log3v3Form");
 
-  const reservationForm = document.getElementById("reservationForm");
-  const timeInput = document.getElementById("timeInput");
-  const terenSelect = document.getElementById("terenSelect");
-  const selectedDateText = document.getElementById("selectedDateText");
-  const cancelBtn = document.getElementById("cancelBtn");
-  const formMsg = document.getElementById("formMsg");
-
-  // Games elements
   const games1v1Loading = document.getElementById("games1v1Loading");
   const games1v1Table = document.getElementById("games1v1Table");
   const games1v1Body = document.getElementById("games1v1Body");
@@ -984,853 +600,503 @@
   const leaderboardBody = document.getElementById("leaderboardBody");
   const leaderboardEmpty = document.getElementById("leaderboardEmpty");
 
-  const modalBackdrop = document.getElementById("modalBackdrop");
-  const modalContent = document.getElementById("modalContent");
-  const modalClose = document.getElementById("modalClose");
-
-  const offlineIndicator = document.getElementById('offlineIndicator');
-
-  // ---------- STATE VARIABLES ----------
+  let usersCache = {};
   let currentUser = null;
-  let visibleYear = (new Date()).getFullYear();
-  let visibleMonth = (new Date()).getMonth();
-  let selectedDay = null;
-  let reservationsCache = [];
-  let isOnline = navigator.onLine;
 
-  // Snapshot unsubscribe holders
-  let leaderboardUnsub = null;
-  let games1v1Unsub = null;
-  let games2v2Unsub = null;
-  let games3v3Unsub = null;
-  let profileUnsub1 = null;
-  let profileUnsub2 = null;
-
-  // PWA install prompt
-  let deferredPrompt;
-
-  const WEEKDAYS = ["Pon","Uto","Sri","Čet","Pet","Sub","Ned"]; 
-
-  // ---------- UTILITY FUNCTIONS ----------
   function slugify(s) {
     return (s || '').toString().trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g,'');
   }
-  
-  function isStandalonePWA() {
-    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
-      || window.navigator.standalone === true;
+
+  // Auto-calculate team scores for 2v2
+  const player1Points2v2 = document.getElementById('player1Points_2v2');
+  const player2Points2v2 = document.getElementById('player2Points_2v2');
+  const player3Points2v2 = document.getElementById('player3Points_2v2');
+  const player4Points2v2 = document.getElementById('player4Points_2v2');
+  const score1_2v2 = document.getElementById('score1_2v2');
+  const score2_2v2 = document.getElementById('score2_2v2');
+
+  function updateScore2v2() {
+    const p1 = parseInt(player1Points2v2.value) || 0;
+    const p2 = parseInt(player2Points2v2.value) || 0;
+    const p3 = parseInt(player3Points2v2.value) || 0;
+    const p4 = parseInt(player4Points2v2.value) || 0;
+    score1_2v2.value = p1 + p2;
+    score2_2v2.value = p3 + p4;
   }
 
-  function monthYearTitle(year, month) {
-    return new Date(year, month, 1).toLocaleString('hr-HR', { month: 'long', year: 'numeric' });
+  player1Points2v2.addEventListener('input', updateScore2v2);
+  player2Points2v2.addEventListener('input', updateScore2v2);
+  player3Points2v2.addEventListener('input', updateScore2v2);
+  player4Points2v2.addEventListener('input', updateScore2v2);
+
+  // Auto-calculate team scores for 3v3
+  const player1Points3v3 = document.getElementById('player1Points_3v3');
+  const player2Points3v3 = document.getElementById('player2Points_3v3');
+  const player3Points3v3 = document.getElementById('player3Points_3v3');
+  const player4Points3v3 = document.getElementById('player4Points_3v3');
+  const player5Points3v3 = document.getElementById('player5Points_3v3');
+  const player6Points3v3 = document.getElementById('player6Points_3v3');
+  const score1_3v3 = document.getElementById('score1_3v3');
+  const score2_3v3 = document.getElementById('score2_3v3');
+
+  function updateScore3v3() {
+    const p1 = parseInt(player1Points3v3.value) || 0;
+    const p2 = parseInt(player2Points3v3.value) || 0;
+    const p3 = parseInt(player3Points3v3.value) || 0;
+    const p4 = parseInt(player4Points3v3.value) || 0;
+    const p5 = parseInt(player5Points3v3.value) || 0;
+    const p6 = parseInt(player6Points3v3.value) || 0;
+    score1_3v3.value = p1 + p2 + p3;
+    score2_3v3.value = p4 + p5 + p6;
   }
 
-  function startOfMonthWeekday(year, month) {
-    const jsDay = new Date(year, month, 1).getDay();
-    return (jsDay === 0) ? 6 : jsDay - 1;
-  }
+  player1Points3v3.addEventListener('input', updateScore3v3);
+  player2Points3v3.addEventListener('input', updateScore3v3);
+  player3Points3v3.addEventListener('input', updateScore3v3);
+  player4Points3v3.addEventListener('input', updateScore3v3);
+  player5Points3v3.addEventListener('input', updateScore3v3);
+  player6Points3v3.addEventListener('input', updateScore3v3);
 
-  function formatLocalDate(y,m,d){
-    return `${String(d).padStart(2,'0')}.${String(m+1).padStart(2,'0')}.${y}`;
-  }
-
-  // ---------- ONESIGNAL NOTIFICATION FUNCTIONS ----------
-  async function sendGameNotification(gameType, team1Display, team2Display, score1, score2) {
+  loginBtn.addEventListener("click", async () => {
     try {
-      // Send notification via OneSignal
-      OneSignalDeferred.push(async function(OneSignal) {
-        const message = `Nova ${gameType} igra: ${team1Display} ${score1} - ${score2} ${team2Display}`;
-        
-        // Show local notification
-        if (await OneSignal.Notifications.permission) {
-          new Notification('Hoops', {
-            body: message,
-            icon: './assets/icon-192.png',
-            badge: './assets/icon-192.png'
-          });
-        }
-        
-        console.log('Game notification sent:', message);
-      });
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error('Error sending game notification:', error);
-    }
-  }
-
-  async function sendReservationNotification(name, teren, dateStr, timeStr) {
-    try {
-      OneSignalDeferred.push(async function(OneSignal) {
-        const message = `${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`;
-        
-        if (await OneSignal.Notifications.permission) {
-          new Notification('Hoops', {
-            body: message,
-            icon: './assets/icon-192.png',
-            badge: './assets/icon-192.png'
-          });
-        }
-        
-        console.log('Reservation notification sent:', message);
-      });
-    } catch (error) {
-      console.error('Error sending reservation notification:', error);
-    }
-  }
-
-  // ---------- USERNAME MANAGEMENT ----------
-  async function promptForUsername(defaultName) {
-    return new Promise((resolve) => {
-      const modal = document.createElement('div');
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      `;
-      
-      const modalContent = document.createElement('div');
-      modalContent.style.cssText = `
-        background: white;
-        padding: 30px;
-        border-radius: 12px;
-        max-width: 400px;
-        width: 90%;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      `;
-      
-      modalContent.innerHTML = `
-        <h3 style="margin: 0 0 16px; color: var(--brand);">Odaberite ime</h3>
-        <p style="margin: 0 0 20px; color: var(--muted);">Kako se želite prikazivati?</p>
-        <input type="text" id="usernameInput" value="${defaultName}" style="
-          width: 100%;
-          padding: 12px;
-          border: 2px solid var(--border);
-          border-radius: 8px;
-          font-size: 16px;
-          margin-bottom: 20px;
-          text-align: center;
-        " placeholder="Unesite vaše ime">
-        <div style="display: flex; gap: 12px; justify-content: center;">
-          <button id="confirmUsername" style="
-            background: var(--brand);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-          ">Potvrdi</button>
-        </div>
-      `;
-      
-      modal.appendChild(modalContent);
-      document.body.appendChild(modal);
-      
-      const input = modalContent.querySelector('#usernameInput');
-      const confirmBtn = modalContent.querySelector('#confirmUsername');
-      
-      input.focus();
-      input.select();
-      
-      const handleConfirm = () => {
-        const username = input.value.trim();
-        if (username) {
-          document.body.removeChild(modal);
-          resolve(username);
-        }
-      };
-      
-      confirmBtn.addEventListener('click', handleConfirm);
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          handleConfirm();
-        }
-      });
-    });
-  }
-
-  async function ensureUserInFirestore(user) {
-    if (!user) return;
-    const userRef = db.collection('users').doc(user.uid);
-    const snapshot = await userRef.get();
-
-    const savedName = localStorage.getItem('hoops_displayName');
-    let chosenName = savedName;
-
-    if (!snapshot.exists || !savedName) {
-      chosenName = await promptForUsername(user.displayName || user.email || "");
-      if (!chosenName) chosenName = user.displayName || user.email || "Unnamed";
-      
-      try { localStorage.setItem('hoops_displayName', chosenName); } catch(e) { }
-
-      const key = slugify(chosenName);
-      await userRef.set({
-        uid: user.uid,
-        email: user.email,
-        name: key,
-        displayName: chosenName,
-        key,
-        wins: 0,
-        losses: 0,
-        pointsFor: 0,
-        pointsAgainst: 0,
-        createdAt: firebase.firestore.Timestamp.now(),
-        lastLogin: firebase.firestore.Timestamp.now()
-      });
-    } else {
-      await userRef.update({
-        lastLogin: firebase.firestore.Timestamp.now()
-      });
-      
-      const data = snapshot.data();
-      if (data && data.displayName && !savedName) {
-        try { localStorage.setItem('hoops_displayName', data.displayName); } catch(e){};
-      }
-    }
-  }
-
-  // ---------- AUTHENTICATION FLOW ----------
-  googleLoginBtn.addEventListener("click", async () => {
-    console.log("Login button clicked!");
-    try {
-      googleLoginBtn.disabled = true;
-      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" /> Prijava u tijeku...';
-
-      const provider = new firebase.auth.GoogleAuthProvider();
-      provider.addScope('email');
-      provider.addScope('profile');
-
-      if (isStandalonePWA()) {
-        console.log('Detected standalone PWA – using signInWithRedirect');
-        await auth.signInWithRedirect(provider);
-        return;
-      }
-
-      console.log("Attempting signInWithPopup...");
-      try {
-        const result = await auth.signInWithPopup(provider);
-        console.log("Sign in successful!", result.user && result.user.email);
-        return;
-      } catch (popupErr) {
-        console.warn('signInWithPopup failed:', popupErr && popupErr.code, popupErr);
-        const failCodes = [
-          'auth/popup-blocked',
-          'auth/pop-up-blocked',
-          'auth/operation-not-supported-in-this-environment',
-          'auth/cancelled-popup-request',
-          'auth/popup-closed-by-user'
-        ];
-        if (!popupErr || failCodes.includes(popupErr.code) || popupErr.message?.toLowerCase().includes('popup')) {
-          console.log('Falling back to signInWithRedirect');
-          await auth.signInWithRedirect(provider);
-          return;
-        }
-        throw popupErr;
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      googleLoginBtn.disabled = false;
-      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
-
-      if (err && err.code === 'auth/popup-closed-by-user') {
-        console.log("User closed the login popup");
-      } else if (err && err.code === 'auth/cancelled-popup-request') {
-        console.log("Popup request was cancelled");
-      } else {
-        alert("Prijava nije uspjela: " + (err && err.message ? err.message : err));
-      }
+      console.error("Login error:", error);
+      alert("Došlo je do pogreške pri prijavi.");
     }
   });
 
   logoutBtn.addEventListener("click", async () => {
-    console.log("Logout button clicked");
-    try {
-      await auth.signOut();
-      console.log("User signed out successfully");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
+    await signOut(auth);
   });
 
-  loginLoading.style.display = 'block';
-  console.log("Checking auth state...");
-
-  auth.onAuthStateChanged(async (user) => {
-    console.log("Auth state changed:", user ? `User logged in: ${user.email}` : "No user logged in");
-    
-    if (user) {
-      currentUser = user;
-      loginWrapper.style.display = "none";
-      appRoot.style.display = "block";
-      loginLoading.style.display = "none";
-
-      updateProfileButton();
-
-      try {
-        await ensureUserInFirestore(user);
-        await loadReservations();
-        renderCalendar();
-        
-        console.log("App initialization complete!");
-      } catch (error) {
-        console.error("Error during post-login setup:", error);
-      }
-    } else {
-      currentUser = null;
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
       loginWrapper.style.display = "flex";
-      appRoot.style.display = "none";
-      loginLoading.style.display = "none";
-      googleLoginBtn.disabled = false;
-      googleLoginBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" />Prijavi se s Googleom';
-      
-      if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
-      if (games1v1Unsub) { games1v1Unsub(); games1v1Unsub = null; }
-      if (games2v2Unsub) { games2v2Unsub(); games2v2Unsub = null; }
-      if (games3v3Unsub) { games3v3Unsub(); games3v3Unsub = null; }
-    }
-  });
-
-  function updateProfileButton() {
-    if (!currentUser) return;
-    
-    const displayName = localStorage.getItem('hoops_displayName') || 
-                       currentUser.displayName || 
-                       currentUser.email || 
-                       'User';
-    
-    const initials = displayName.split(' ')
-      .map(n => n[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
-    
-    const avatar = profileBtn.querySelector('.profileAvatar');
-    avatar.textContent = initials;
-    
-    const nameSpan = profileBtn.querySelector('.profileName');
-    nameSpan.textContent = displayName.split(' ')[0];
-  }
-
-  profileBtn.addEventListener('click', async () => {
-    if (!currentUser) return;
-    
-    const userRef = db.collection('users').doc(currentUser.uid);
-    const userDoc = await userRef.get();
-    
-    if (userDoc.exists) {
-      const userData = userDoc.data();
-      openProfileModal(userData.key, true);
-    }
-  });
-
-  // ---------- CALENDAR FUNCTIONS ----------
-  async function loadReservations(){
-    reservationsCache = [];
-    try {
-      if (!isOnline) {
-        console.log('Offline mode - using cached data');
-        return;
-      }
-      
-      const snapshot = await db.collection('reservations').get();
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        reservationsCache.push({ id: docSnap.id, ...data });
-      });
-      console.log(`Loaded ${reservationsCache.length} reservations`);
-    } catch(err){
-      console.error("Error loading reservations", err);
-      if (formMsg) {
-        if (err.code === 'permission-denied') {
-          formMsg.textContent = "Nemate dozvole za pristup rezervacijama.";
-        } else {
-          formMsg.textContent = "Greška pri učitavanju rezervacija.";
-        }
-        formMsg.style.color = "#d32f2f";
-      }
-      reservationsCache = [];
-    }
-  }
-
-  function reservationsForDay(year,month,day){
-    return reservationsCache.filter(r => {
-      if (!r.timestamp) return false;
-      const dt = r.timestamp.toDate();
-      return dt.getFullYear()===year && dt.getMonth()===month && dt.getDate()===day;
-    });
-  }
-
-  function renderCalendar(){
-    daysGrid.innerHTML = "";
-    weekdaysContainer.innerHTML = "";
-
-    WEEKDAYS.forEach(w => {
-      const wEl = document.createElement("div");
-      wEl.className = "weekday";
-      wEl.textContent = w;
-      weekdaysContainer.appendChild(wEl);
-    });
-
-    const year = visibleYear;
-    const month = visibleMonth;
-    monthTitle.textContent = monthYearTitle(year, month);
-
-    const firstWeekday = startOfMonthWeekday(year, month);
-    const lastDay = new Date(year, month+1, 0).getDate();
-
-    for (let i=0;i<firstWeekday;i++){
-      const empty = document.createElement("div");
-      empty.className = "day empty";
-      daysGrid.appendChild(empty);
-    }
-
-    const today = new Date();
-    for (let d=1; d<=lastDay; d++){
-      const dayEl = document.createElement("div");
-      dayEl.className = "day";
-      const dayNum = document.createElement("div");
-      dayNum.className = "num";
-      dayNum.textContent = d;
-      dayEl.appendChild(dayNum);
-
-      const dayRes = reservationsForDay(year, month, d);
-
-      const items = document.createElement("div");
-      items.className = "items";
-      if (dayRes.length>0){
-        dayRes.slice(0,3).forEach(r => {
-          const dt = r.timestamp.toDate();
-          const t = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-          const item = document.createElement("div");
-          item.textContent = `${r.name} – ${t} – ${r.teren}`;
-          items.appendChild(item);
-        });
-        if (dayRes.length>3){
-          const more = document.createElement("div");
-          more.textContent = `+${dayRes.length-3} više...`;
-          more.style.color = "#666"; more.style.fontSize="12px";
-          items.appendChild(more);
-        }
-        dayEl.appendChild(items);
-      }
-
-      if (dayRes.length>0){
-        let info = "";
-        dayRes.forEach(r => {
-          const dt = r.timestamp.toDate();
-          const t = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-          info += `${r.name} – ${t} – ${r.teren}\n`;
-        });
-        dayEl.setAttribute("data-tooltip", info.trim());
-        dayEl.addEventListener("mouseenter", (e)=>{
-          const tt = document.createElement("div");
-          tt.className="tooltip";
-          tt.id = "tmpTooltip";
-          tt.textContent = e.currentTarget.getAttribute("data-tooltip");
-          document.body.appendChild(tt);
-          const rect = e.currentTarget.getBoundingClientRect();
-          tt.style.position="absolute";
-          tt.style.left = (rect.left + rect.width/2 - tt.offsetWidth/2) + "px";
-          tt.style.top = (rect.top - tt.offsetHeight - 10) + "px";
-        });
-        dayEl.addEventListener("mouseleave", ()=>{
-          const ttd = document.getElementById("tmpTooltip");
-          if (ttd) ttd.remove();
-        });
-      }
-
-      const slotDate = new Date(year, month, d);
-      const slotIsPast = new Date(today.getFullYear(), today.getMonth(), today.getDate()) > slotDate;
-      if (slotIsPast) dayEl.classList.add("past");
-      else if (dayRes.length===0) dayEl.classList.add("available");
-      else {
-        const mine = dayRes.find(r => r.user === (currentUser && currentUser.email));
-        if (mine) dayEl.classList.add("mine");
-        else dayEl.classList.add("reserved-other");
-      }
-
-      dayEl.addEventListener("click", () => {
-        if (slotIsPast) return;
-        selectedDay = new Date(year, month, d);
-        selectedDateText.textContent = formatLocalDate(year,month,d);
-        reservationForm.style.display = "block";
-      });
-
-      daysGrid.appendChild(dayEl);
-    }
-  }
-
-  prevMonthBtn.addEventListener("click", () => {
-    visibleMonth--;
-    if (visibleMonth < 0){ visibleMonth = 11; visibleYear--; }
-    renderCalendar();
-  });
-  nextMonthBtn.addEventListener("click", () => {
-    visibleMonth++;
-    if (visibleMonth > 11){ visibleMonth = 0; visibleYear++; }
-    renderCalendar();
-  });
-
-  // ---------- RESERVATION FORM SUBMIT ----------
-  reservationForm.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    if (!selectedDay) { formMsg.textContent = "Odaberite datum iz kalendara."; return; }
-    if (!currentUser) { formMsg.textContent = "Morate biti prijavljeni."; return; }
-
-    const name = localStorage.getItem('hoops_displayName') || currentUser.displayName || currentUser.email || 'Unnamed';
-    const timeVal = timeInput.value;
-    const teren = terenSelect.value;
-
-    if (!timeVal || !teren){ formMsg.textContent = "Ispunite sva polja."; return; }
-    formMsg.textContent = "Spremanje…";
-
-    const [hh,mm] = timeVal.split(":").map(s => parseInt(s,10));
-    const dt = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), selectedDay.getDate(), hh, mm);
-
-    const clash = reservationsCache.find(r => {
-      if (!r.timestamp) return false;
-      const rdt = r.timestamp.toDate();
-      return Math.abs(rdt.getTime() - dt.getTime()) < (1000*60*60) && r.teren === teren;
-    });
-    if (clash){
-      formMsg.textContent = "Postoji rezervacija u istom terminu za odabrani teren.";
+      adminWrapper.style.display = "none";
       return;
     }
 
-    try {
-      const reservationData = {
-        timestamp: firebase.firestore.Timestamp.fromDate(dt),
-        name,
-        teren,
-        user: currentUser.email,
-        createdAt: firebase.firestore.Timestamp.now()
-      };
+    if (user.email === "linovernik@gmail.com") {
+      currentUser = user;
+      loginWrapper.style.display = "none";
+      adminWrapper.style.display = "block";
+      userEmail.textContent = user.email;
 
-      const docRef = await db.collection('reservations').add(reservationData);
-      console.log("Reservation created with ID:", docRef.id);
-
-      formMsg.textContent = "Rezervirano uspješno!";
-      formMsg.style.color = "#10b981";
-      reservationForm.reset();
-      selectedDateText.textContent = "—";
-      selectedDay = null;
-
-      const dateStr = formatLocalDate(dt.getFullYear(), dt.getMonth(), dt.getDate());
-      const timeStr = dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      await sendReservationNotification(name, teren, dateStr, timeStr);
-
-      await loadReservations();
-      renderCalendar();
-
-    } catch(err){
-      console.error("Add reservation error", err);
-      if (err.code === 'permission-denied') {
-        formMsg.textContent = "Nemate dozvole za kreiranje rezervacija.";
-      } else if (err.code === 'unavailable') {
-        formMsg.textContent = "Servis trenutno nije dostupan.";
-      } else {
-        formMsg.textContent = "Greška pri spremanju.";
-      }
-      formMsg.style.color = "#d32f2f";
+      loadUsersForSelects().catch(err => console.error("Load users error", err));
+      load1v1Games().catch(err => console.error("Load 1v1 games error", err));
+    } else {
+      alert("Nemate pristup admin stranici.");
+      signOut(auth).catch(err => console.error("Sign out error", err));
     }
   });
 
-  cancelBtn.addEventListener("click", () => {
-    reservationForm.reset();
-    selectedDateText.textContent = "—";
-    selectedDay = null;
-    formMsg.textContent = "";
-    reservationForm.style.display = "none";
-  });
-
-  // ---------- TAB NAVIGATION ----------
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
       btn.classList.add('active');
       const tabId = btn.dataset.tab + 'Tab';
       document.getElementById(tabId).classList.add('active');
-      
-      if (btn.dataset.tab === 'leaderboard') {
-        startLeaderboardRealtime();
-      } else if (btn.dataset.tab === '1v1') {
-        start1v1GamesRealtime();
+      if (btn.dataset.tab === '1v1') {
+        load1v1Games();
       } else if (btn.dataset.tab === '2v2') {
-        start2v2GamesRealtime();
+        load2v2Games();
       } else if (btn.dataset.tab === '3v3') {
-        start3v3GamesRealtime();
+        load3v3Games();
+      } else if (btn.dataset.tab === 'leaderboard') {
+        loadLeaderboard();
       }
     });
   });
 
-  // ---------- 1V1 GAMES FUNCTIONALITY ----------
-  function start1v1GamesRealtime() {
-    if (games1v1Unsub) { games1v1Unsub(); games1v1Unsub = null; }
+  async function loadUsersForSelects() {
+    usersCache = {};
+    const usersSnap = await getDocs(collection(db, "users"));
+    const defaultOpt = document.createElement("option");
+    defaultOpt.value = "";
+    defaultOpt.textContent = "-- select player --";
 
-    try {
-      const gamesRef = db.collection('games_1v1');
+    const otherOpt = document.createElement("option");
+    otherOpt.value = "__new__";
+    otherOpt.textContent = "Other / New...";
 
-      games1v1Unsub = gamesRef.orderBy('createdAt', 'desc').limit(50).onSnapshot(
-        (snapshot) => { render1v1Games(snapshot); },
-        (error) => {
-          console.error('1v1 games snapshot error:', error);
-          games1v1Loading.style.display = 'none';
-          games1v1Empty.style.display = '';
-          games1v1Empty.textContent = 'Greška pri učitavanju igara.';
-        }
-      );
-    } catch (error) {
-      console.error('Error starting 1v1 games realtime:', error);
-      games1v1Loading.style.display = 'none';
-      games1v1Empty.style.display = '';
-      games1v1Empty.textContent = 'Greška pri učitavanju igara.';
-    }
+    const selects = [
+      'player1_1v1', 'player2_1v1',
+      'player1_2v2', 'player2_2v2', 'player3_2v2', 'player4_2v2',
+      'player1_3v3', 'player2_3v3', 'player3_3v3', 'player4_3v3', 'player5_3v3', 'player6_3v3'
+    ];
+
+    selects.forEach(selectId => {
+      const select = document.getElementById(selectId);
+      select.innerHTML = "";
+      select.appendChild(defaultOpt.cloneNode(true));
+    });
+
+    usersSnap.forEach(docSnap => {
+      const u = docSnap.data();
+      const key = u.key || slugify(u.name || '');
+      const label = u.displayName || u.name || key;
+      usersCache[key] = { id: docSnap.id, key, label, ...u };
+
+      selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = label;
+        select.appendChild(opt);
+      });
+    });
+
+    selects.forEach(selectId => {
+      const select = document.getElementById(selectId);
+      select.appendChild(otherOpt.cloneNode(true));
+    });
+
+    selects.forEach(selectId => {
+      const select = document.getElementById(selectId);
+      const gameType = selectId.includes('1v1') ? '1v1' : (selectId.includes('2v2') ? '2v2' : '3v3');
+      const playerNum = selectId.match(/player(\d)/)[1];
+      const newInput = document.getElementById(`player${playerNum}New_${gameType}`);
+      if (newInput) {
+        select.addEventListener("change", () => {
+          newInput.style.display = select.value === "__new__" ? "block" : "none";
+        });
+      }
+    });
   }
 
-  function render1v1Games(snapshot) {
-    games1v1Loading.style.display = 'none';
+  function getPlayerData(selectId, newInputId) {
+    const select = document.getElementById(selectId);
+    const newInput = document.getElementById(newInputId);
+    if (select.value === "__new__") {
+      const displayName = newInput.value.trim();
+      if (!displayName) return null;
+      const key = slugify(displayName);
+      return { key, displayName };
+    } else if (select.value) {
+      const key = select.value;
+      const displayName = usersCache[key] ? usersCache[key].label : key;
+      return { key, displayName };
+    }
+    return null;
+  }
+
+  log1v1Form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const player1 = getPlayerData('player1_1v1', 'player1New_1v1');
+    const player2 = getPlayerData('player2_1v1', 'player2New_1v1');
+    if (!player1) { alert("Enter Player 1"); return; }
+    if (!player2) { alert("Enter Player 2"); return; }
+    const score1 = parseInt(document.getElementById("score1_1v1").value);
+    const score2 = parseInt(document.getElementById("score2_1v1").value);
+    if (isNaN(score1) || isNaN(score2)) { alert("Enter valid scores"); return; }
+    if (player1.key === player2.key) { alert("Players must be different"); return; }
+    try {
+      await addDoc(collection(db,"games_1v1"),{
+        team1: player1.key,
+        team1Display: player1.displayName,
+        score1,
+        team2: player2.key,
+        team2Display: player2.displayName,
+        score2,
+        winner: score1 > score2 ? player1.key : player2.key,
+        createdAt: new Date()
+      });
+      alert("1v1 Game logged successfully!");
+      log1v1Form.reset();
+      document.getElementById('player1New_1v1').style.display = 'none';
+      document.getElementById('player2New_1v1').style.display = 'none';
+      await loadUsersForSelects();
+      await load1v1Games();
+    } catch (error) {
+      console.error("Error logging 1v1 game:", error);
+      alert("Error logging game. Please try again.");
+    }
+  });
+
+  async function load1v1Games() {
+    games1v1Loading.style.display = '';
     games1v1Table.style.display = 'none';
     games1v1Empty.style.display = 'none';
-
-    if (snapshot.empty) {
+    games1v1Body.innerHTML = '';
+    try {
+      const gamesSnap = await getDocs(collection(db, 'games_1v1'));
+      if (gamesSnap.empty) {
+        games1v1Loading.style.display = 'none';
+        games1v1Empty.style.display = '';
+        return;
+      }
+      const games = [];
+      gamesSnap.forEach(doc => {
+        games.push({ id: doc.id, ...doc.data() });
+      });
+      games.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA;
+      });
+      games.slice(0, 20).forEach(game => {
+        const tr = document.createElement("tr");
+        const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
+        let winnerText = '—';
+        if ((game.score1 || 0) > (game.score2 || 0)) {
+          winnerText = game.team1Display || game.team1;
+        } else if ((game.score2 || 0) > (game.score1 || 0)) {
+          winnerText = game.team2Display || game.team2;
+        }
+        tr.innerHTML = `
+          <td>${date}</td>
+          <td>${game.team1Display || game.team1}</td>
+          <td class="center"><strong>${game.score1 || 0} - ${game.score2 || 0}</strong></td>
+          <td>${game.team2Display || game.team2}</td>
+          <td class="center">${winnerText}</td>
+        `;
+        games1v1Body.appendChild(tr);
+      });
+      games1v1Loading.style.display = 'none';
+      games1v1Table.style.display = '';
+    } catch (error) {
+      console.error('Error loading 1v1 games:', error);
+      games1v1Loading.style.display = 'none';
       games1v1Empty.style.display = '';
-      games1v1Empty.textContent = 'Nema odigranih 1v1 igara.';
+    }
+  }
+
+  log2v2Form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const player1 = getPlayerData('player1_2v2', 'player1New_2v2');
+    const player2 = getPlayerData('player2_2v2', 'player2New_2v2');
+    const player3 = getPlayerData('player3_2v2', 'player3New_2v2');
+    const player4 = getPlayerData('player4_2v2', 'player4New_2v2');
+    if (!player1 || !player2 || !player3 || !player4) {
+      alert("Please select or enter all 4 players");
       return;
     }
-
-    games1v1Body.innerHTML = '';
-    
-    snapshot.forEach(doc => {
-      const game = doc.data();
-      const tr = document.createElement('tr');
-      
-      const dateVal = game.createdAt && game.createdAt.toDate ? game.createdAt.toDate() : null;
-      const dateStr = dateVal ? dateVal.toLocaleString('hr-HR', {dateStyle:'short', timeStyle:'short'}) : '—';
-      
-      const team1Display = game.team1Display || game.team1 || '—';
-      const team2Display = game.team2Display || game.team2 || '—';
-      const score1 = game.score1 || 0;
-      const score2 = game.score2 || 0;
-      
-      let winnerText = '—';
-      if (score1 > score2) {
-        winnerText = `<span style="color:var(--success);font-weight:600">${team1Display}</span>`;
-      } else if (score2 > score1) {
-        winnerText = `<span style="color:var(--success);font-weight:600">${team2Display}</span>`;
-      } else {
-        winnerText = '<span style="color:var(--muted)">Neriješeno</span>';
-      }
-      
-      tr.innerHTML = `
-        <td>${dateStr}</td>
-        <td>${team1Display}</td>
-        <td class="center"><strong>${score1} - ${score2}</strong></td>
-        <td>${team2Display}</td>
-        <td class="center">${winnerText}</td>
-      `;
-      
-      games1v1Body.appendChild(tr);
-    });
-
-    games1v1Table.style.display = 'table';
-  }
-
-  // ---------- 2V2 GAMES FUNCTIONALITY ----------
-  function start2v2GamesRealtime() {
-    if (games2v2Unsub) { games2v2Unsub(); games2v2Unsub = null; }
-
-    try {
-      const gamesRef = db.collection('games_2v2');
-
-      games2v2Unsub = gamesRef.orderBy('createdAt', 'desc').limit(50).onSnapshot(
-        (snapshot) => { render2v2Games(snapshot); },
-        (error) => {
-          console.error('2v2 games snapshot error:', error);
-          games2v2Loading.style.display = 'none';
-          games2v2Empty.style.display = '';
-          games2v2Empty.textContent = 'Greška pri učitavanju igara.';
-        }
-      );
-    } catch (error) {
-      console.error('Error starting 2v2 games realtime:', error);
-      games2v2Loading.style.display = 'none';
-      games2v2Empty.style.display = '';
-      games2v2Empty.textContent = 'Greška pri učitavanju igara.';
+    const p1Points = parseInt(document.getElementById("player1Points_2v2").value);
+    const p2Points = parseInt(document.getElementById("player2Points_2v2").value);
+    const p3Points = parseInt(document.getElementById("player3Points_2v2").value);
+    const p4Points = parseInt(document.getElementById("player4Points_2v2").value);
+    if (isNaN(p1Points) || isNaN(p2Points) || isNaN(p3Points) || isNaN(p4Points)) {
+      alert("Enter valid points for all players");
+      return;
     }
-  }
+    const score1 = p1Points + p2Points;
+    const score2 = p3Points + p4Points;
+    const playerKeys = [player1.key, player2.key, player3.key, player4.key];
+    const uniqueKeys = new Set(playerKeys);
+    if (uniqueKeys.size !== 4) {
+      alert("All players must be different");
+      return;
+    }
+    try {
+      const team1Display = `${player1.displayName} & ${player2.displayName}`;
+      const team2Display = `${player3.displayName} & ${player4.displayName}`;
+      const playerPoints = {};
+      playerPoints[player1.key] = p1Points;
+      playerPoints[player2.key] = p2Points;
+      playerPoints[player3.key] = p3Points;
+      playerPoints[player4.key] = p4Points;
+      await addDoc(collection(db,"games_2v2"),{
+        team1Players: [player1.key, player2.key],
+        team1Display,
+        score1,
+        team2Players: [player3.key, player4.key],
+        team2Display,
+        score2,
+        playerPoints,
+        winner: score1 > score2 ? 'team1' : 'team2',
+        createdAt: new Date()
+      });
+      alert("2v2 Game logged successfully!");
+      log2v2Form.reset();
+      ['player1New_2v2', 'player2New_2v2', 'player3New_2v2', 'player4New_2v2'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      await loadUsersForSelects();
+      await load2v2Games();
+    } catch (error) {
+      console.error("Error logging 2v2 game:", error);
+      alert("Error logging game. Please try again.");
+    }
+  });
 
-  function render2v2Games(snapshot) {
-    games2v2Loading.style.display = 'none';
+  async function load2v2Games() {
+    games2v2Loading.style.display = '';
     games2v2Table.style.display = 'none';
     games2v2Empty.style.display = 'none';
-
-    if (snapshot.empty) {
+    games2v2Body.innerHTML = '';
+    try {
+      const gamesSnap = await getDocs(collection(db, 'games_2v2'));
+      if (gamesSnap.empty) {
+        games2v2Loading.style.display = 'none';
+        games2v2Empty.style.display = '';
+        return;
+      }
+      const games = [];
+      gamesSnap.forEach(doc => {
+        games.push({ id: doc.id, ...doc.data() });
+      });
+      games.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA;
+      });
+      games.slice(0, 20).forEach(game => {
+        const tr = document.createElement("tr");
+        const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
+        let winnerText = '—';
+        if ((game.score1 || 0) > (game.score2 || 0)) {
+          winnerText = game.team1Display || 'Team 1';
+        } else if ((game.score2 || 0) > (game.score1 || 0)) {
+          winnerText = game.team2Display || 'Team 2';
+        }
+        tr.innerHTML = `
+          <td>${date}</td>
+          <td>${game.team1Display || 'Team 1'}</td>
+          <td class="center"><strong>${game.score1 || 0} - ${game.score2 || 0}</strong></td>
+          <td>${game.team2Display || 'Team 2'}</td>
+          <td class="center">${winnerText}</td>
+        `;
+        games2v2Body.appendChild(tr);
+      });
+      games2v2Loading.style.display = 'none';
+      games2v2Table.style.display = '';
+    } catch (error) {
+      console.error('Error loading 2v2 games:', error);
+      games2v2Loading.style.display = 'none';
       games2v2Empty.style.display = '';
-      games2v2Empty.textContent = 'Nema odigranih 2v2 igara.';
+    }
+  }
+
+  log3v3Form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const player1 = getPlayerData('player1_3v3', 'player1New_3v3');
+    const player2 = getPlayerData('player2_3v3', 'player2New_3v3');
+    const player3 = getPlayerData('player3_3v3', 'player3New_3v3');
+    const player4 = getPlayerData('player4_3v3', 'player4New_3v3');
+    const player5 = getPlayerData('player5_3v3', 'player5New_3v3');
+    const player6 = getPlayerData('player6_3v3', 'player6New_3v3');
+    if (!player1 || !player2 || !player3 || !player4 || !player5 || !player6) {
+      alert("Please select or enter all 6 players");
       return;
     }
-
-    games2v2Body.innerHTML = '';
-    
-    snapshot.forEach(doc => {
-      const game = doc.data();
-      const tr = document.createElement('tr');
-      
-      const dateVal = game.createdAt && game.createdAt.toDate ? game.createdAt.toDate() : null;
-      const dateStr = dateVal ? dateVal.toLocaleString('hr-HR', {dateStyle:'short', timeStyle:'short'}) : '—';
-      
-      const team1Display = game.team1Display || '—';
-      const team2Display = game.team2Display || '—';
-      const score1 = game.score1 || 0;
-      const score2 = game.score2 || 0;
-      
-      let winnerText = '—';
-      if (score1 > score2) {
-        winnerText = `<span style="color:var(--success);font-weight:600">${team1Display}</span>`;
-      } else if (score2 > score1) {
-        winnerText = `<span style="color:var(--success);font-weight:600">${team2Display}</span>`;
-      } else {
-        winnerText = '<span style="color:var(--muted)">Neriješeno</span>';
-      }
-      
-      tr.innerHTML = `
-        <td>${dateStr}</td>
-        <td>${team1Display}</td>
-        <td class="center"><strong>${score1} - ${score2}</strong></td>
-        <td>${team2Display}</td>
-        <td class="center">${winnerText}</td>
-      `;
-      
-      games2v2Body.appendChild(tr);
-    });
-
-    games2v2Table.style.display = 'table';
-  }
-
-  // ---------- 3V3 GAMES FUNCTIONALITY ----------
-  function start3v3GamesRealtime() {
-    if (games3v3Unsub) { games3v3Unsub(); games3v3Unsub = null; }
-
-    try {
-      const gamesRef = db.collection('games_3v3');
-
-      games3v3Unsub = gamesRef.orderBy('createdAt', 'desc').limit(50).onSnapshot(
-        (snapshot) => { render3v3Games(snapshot); },
-        (error) => {
-          console.error('3v3 games snapshot error:', error);
-          games3v3Loading.style.display = 'none';
-          games3v3Empty.style.display = '';
-          games3v3Empty.textContent = 'Greška pri učitavanju igara.';
-        }
-      );
-    } catch (error) {
-      console.error('Error starting 3v3 games realtime:', error);
-      games3v3Loading.style.display = 'none';
-      games3v3Empty.style.display = '';
-      games3v3Empty.textContent = 'Greška pri učitavanju igara.';
+    const p1Points = parseInt(document.getElementById("player1Points_3v3").value);
+    const p2Points = parseInt(document.getElementById("player2Points_3v3").value);
+    const p3Points = parseInt(document.getElementById("player3Points_3v3").value);
+    const p4Points = parseInt(document.getElementById("player4Points_3v3").value);
+    const p5Points = parseInt(document.getElementById("player5Points_3v3").value);
+    const p6Points = parseInt(document.getElementById("player6Points_3v3").value);
+    if (isNaN(p1Points) || isNaN(p2Points) || isNaN(p3Points) || isNaN(p4Points) || isNaN(p5Points) || isNaN(p6Points)) {
+      alert("Enter valid points for all players");
+      return;
     }
-  }
+    const score1 = p1Points + p2Points + p3Points;
+    const score2 = p4Points + p5Points + p6Points;
+    const playerKeys = [player1.key, player2.key, player3.key, player4.key, player5.key, player6.key];
+    const uniqueKeys = new Set(playerKeys);
+    if (uniqueKeys.size !== 6) {
+      alert("All players must be different");
+      return;
+    }
+    try {
+      const team1Display = `${player1.displayName}, ${player2.displayName} & ${player3.displayName}`;
+      const team2Display = `${player4.displayName}, ${player5.displayName} & ${player6.displayName}`;
+      const playerPoints = {};
+      playerPoints[player1.key] = p1Points;
+      playerPoints[player2.key] = p2Points;
+      playerPoints[player3.key] = p3Points;
+      playerPoints[player4.key] = p4Points;
+      playerPoints[player5.key] = p5Points;
+      playerPoints[player6.key] = p6Points;
+      await addDoc(collection(db,"games_3v3"),{
+        team1Players: [player1.key, player2.key, player3.key],
+        team1Display,
+        score1,
+        team2Players: [player4.key, player5.key, player6.key],
+        team2Display,
+        score2,
+        playerPoints,
+        winner: score1 > score2 ? 'team1' : 'team2',
+        createdAt: new Date()
+      });
+      alert("3v3 Game logged successfully!");
+      log3v3Form.reset();
+      ['player1New_3v3', 'player2New_3v3', 'player3New_3v3', 'player4New_3v3', 'player5New_3v3', 'player6New_3v3'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      await loadUsersForSelects();
+      await load3v3Games();
+    } catch (error) {
+      console.error("Error logging 3v3 game:", error);
+      alert("Error logging game. Please try again.");
+    }
+  });
 
-  function render3v3Games(snapshot) {
-    games3v3Loading.style.display = 'none';
+  async function load3v3Games() {
+    games3v3Loading.style.display = '';
     games3v3Table.style.display = 'none';
     games3v3Empty.style.display = 'none';
-
-    if (snapshot.empty) {
-      games3v3Empty.style.display = '';
-      games3v3Empty.textContent = 'Nema odigranih 3v3 igara.';
-      return;
-    }
-
     games3v3Body.innerHTML = '';
-    
-    snapshot.forEach(doc => {
-      const game = doc.data();
-      const tr = document.createElement('tr');
-      
-      const dateVal = game.createdAt && game.createdAt.toDate ? game.createdAt.toDate() : null;
-      const dateStr = dateVal ? dateVal.toLocaleString('hr-HR', {dateStyle:'short', timeStyle:'short'}) : '—';
-      
-      const team1Display = game.team1Display || '—';
-      const team2Display = game.team2Display || '—';
-      const score1 = game.score1 || 0;
-      const score2 = game.score2 || 0;
-      
-      let winnerText = '—';
-      if (score1 > score2) {
-        winnerText = `<span style="color:var(--success);font-weight:600">${team1Display}</span>`;
-      } else if (score2 > score1) {
-        winnerText = `<span style="color:var(--success);font-weight:600">${team2Display}</span>`;
-      } else {
-        winnerText = '<span style="color:var(--muted)">Neriješeno</span>';
-      }
-      
-      tr.innerHTML = `
-        <td>${dateStr}</td>
-        <td>${team1Display}</td>
-        <td class="center"><strong>${score1} - ${score2}</strong></td>
-        <td>${team2Display}</td>
-        <td class="center">${winnerText}</td>
-      `;
-      
-      games3v3Body.appendChild(tr);
-    });
-
-    games3v3Table.style.display = 'table';
-  }
-
-  // ---------- LEADERBOARD FUNCTIONALITY ----------
-  function startLeaderboardRealtime() {
-    if (leaderboardUnsub) { leaderboardUnsub(); leaderboardUnsub = null; }
-
     try {
-      const gamesRef = db.collection('games_1v1');
-
-      leaderboardUnsub = gamesRef.onSnapshot(
-        () => { computeAndRenderLeaderboard(); },
-        (error) => {
-          console.error('Leaderboard snapshot error:', error);
-          computeAndRenderLeaderboard();
+      const gamesSnap = await getDocs(collection(db, 'games_3v3'));
+      if (gamesSnap.empty) {
+        games3v3Loading.style.display = 'none';
+        games3v3Empty.style.display = '';
+        return;
+      }
+      const games = [];
+      gamesSnap.forEach(doc => {
+        games.push({ id: doc.id, ...doc.data() });
+      });
+      games.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA;
+      });
+      games.slice(0, 20).forEach(game => {
+        const tr = document.createElement("tr");
+        const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
+        let winnerText = '—';
+        if ((game.score1 || 0) > (game.score2 || 0)) {
+          winnerText = game.team1Display || 'Team 1';
+        } else if ((game.score2 || 0) > (game.score1 || 0)) {
+          winnerText = game.team2Display || 'Team 2';
         }
-      );
-
-      computeAndRenderLeaderboard();
+        tr.innerHTML = `
+          <td>${date}</td>
+          <td>${game.team1Display || 'Team 1'}</td>
+          <td class="center"><strong>${game.score1 || 0} - ${game.score2 || 0}</strong></td>
+          <td>${game.team2Display || 'Team 2'}</td>
+          <td class="center">${winnerText}</td>
+        `;
+        games3v3Body.appendChild(tr);
+      });
+      games3v3Loading.style.display = 'none';
+      games3v3Table.style.display = '';
     } catch (error) {
-      console.error('Error starting leaderboard realtime:', error);
-      computeAndRenderLeaderboard();
+      console.error('Error loading 3v3 games:', error);
+      games3v3Loading.style.display = 'none';
+      games3v3Empty.style.display = '';
     }
   }
 
-  async function computeAndRenderLeaderboard() {
+  async function loadLeaderboard() {
+    leaderboardLoading.style.display = '';
+    leaderboardTable.style.display = 'none';
+    leaderboardEmpty.style.display = 'none';
+    leaderboardBody.innerHTML = '';
     try {
-      console.log('Computing leaderboard...');
-      leaderboardLoading.style.display = '';
-      leaderboardTable.style.display = 'none';
-      leaderboardEmpty.style.display = 'none';
-      leaderboardBody.innerHTML = '';
-
       const usersMap = {};
-
-      const gamesSnap = await db.collection('games_1v1').get();
+      const gamesSnap = await getDocs(collection(db, 'games_1v1'));
       let gameCount = 0;
-      
       gamesSnap.forEach(docSnap => {
         const g = docSnap.data();
         const t1Key = (g.team1 || g.team1Key || '').toString().toLowerCase();
         const t2Key = (g.team2 || g.team2Key || '').toString().toLowerCase();
-          
         if (!t1Key || !t2Key) return;
         gameCount++;
-          
         if (!usersMap[t1Key]) {
           usersMap[t1Key] = { 
             key: t1Key, 
@@ -1851,12 +1117,10 @@
             pointsAgainst: 0 
           };
         }
-          
         usersMap[t1Key].pointsFor += (g.score1 || 0);
         usersMap[t1Key].pointsAgainst += (g.score2 || 0);
         usersMap[t2Key].pointsFor += (g.score2 || 0);
         usersMap[t2Key].pointsAgainst += (g.score1 || 0);
-          
         if ((g.score1 || 0) > (g.score2 || 0)) { 
           usersMap[t1Key].wins += 1; 
           usersMap[t2Key].losses += 1; 
@@ -1865,350 +1129,50 @@
           usersMap[t1Key].losses += 1; 
         }
       });
-
       leaderboardLoading.style.display = 'none';
-        
-      if (gameCount === 0) { 
+      if (gameCount === 0) {
         leaderboardEmpty.style.display = '';
         leaderboardEmpty.textContent = 'Nema odigranih igara za prikaz.';
-        return; 
+        return;
       }
-
-      const arr = Object.values(usersMap);
-      arr.sort((a,b) => { 
-        if ((b.wins||0) !== (a.wins||0)) return (b.wins||0)-(a.wins||0); 
-        return ((b.pointsFor||0)-(b.pointsAgainst||0)) - ((a.pointsFor||0)-(a.pointsAgainst||0)); 
+      const leaderboardArray = Object.values(usersMap);
+      leaderboardArray.sort((a,b)=>{
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        return (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
       });
-
-      arr.forEach(u => {
-        const tr = document.createElement('tr');
-        const nameEl = document.createElement('a');
-        nameEl.href = '#';
-        nameEl.className = 'profile-link';
-        nameEl.textContent = u.name;
-        nameEl.addEventListener('click', (e) => { 
-          e.preventDefault(); 
-          openProfileModal(u.key, false); 
-        });
-        
-        const tdName = document.createElement('td'); 
-        tdName.appendChild(nameEl);
-        const tdWins = document.createElement('td'); 
-        tdWins.className = 'center'; 
-        tdWins.textContent = u.wins||0;
-        const tdLoss = document.createElement('td'); 
-        tdLoss.className = 'center'; 
-        tdLoss.textContent = u.losses||0;
-        const tdDiff = document.createElement('td'); 
-        tdDiff.className = 'center'; 
-        tdDiff.textContent = (u.pointsFor||0)-(u.pointsAgainst||0);
-        
-        tr.appendChild(tdName); 
-        tr.appendChild(tdWins); 
-        tr.appendChild(tdLoss); 
-        tr.appendChild(tdDiff);
+      leaderboardArray.forEach((u, idx)=>{
+        const rank = idx + 1;
+        const tr = document.createElement("tr");
+        let rankBadge = '';
+        if (rank === 1) rankBadge = '🥇';
+        else if (rank === 2) rankBadge = '🥈';
+        else if (rank === 3) rankBadge = '🥉';
+        else rankBadge = rank;
+        tr.innerHTML = `
+          <td style="padding:6px;text-align:center;font-weight:700;">${rankBadge}</td>
+          <td style="padding:6px;">${u.name}</td>
+          <td style="padding:6px;text-align:center;">${u.wins}</td>
+          <td style="padding:6px;text-align:center;">${u.losses}</td>
+          <td style="padding:6px;text-align:center;">${u.pointsFor - u.pointsAgainst}</td>
+        `;
         leaderboardBody.appendChild(tr);
       });
-
-      leaderboardTable.style.display = 'table';
-      console.log('Leaderboard rendered with', arr.length, 'players');
+      leaderboardTable.style.display = '';
     } catch (error) {
       console.error('Error loading leaderboard:', error);
       leaderboardLoading.style.display = 'none';
       leaderboardEmpty.style.display = '';
-      if (error.code === 'permission-denied') {
-        leaderboardEmpty.textContent = 'Nemate dozvole za pristup leaderboardu.';
-      } else {
-        leaderboardEmpty.textContent = 'Greška pri učitavanju leaderboarda.';
-      }
+      leaderboardEmpty.textContent = 'Greška pri učitavanju leaderboarda.';
     }
   }
 
-  // ---------- PROFILE MODAL ----------
-  function openProfileModal(userKey, isOwnProfile) {
-    if (profileUnsub1) { profileUnsub1(); profileUnsub1 = null; }
-    if (profileUnsub2) { profileUnsub2(); profileUnsub2 = null; }
-    modalContent.innerHTML = '<div class="small">Učitavanje...</div>'; 
-    modalBackdrop.style.display = 'flex';
-
-    const header = document.createElement('div'); 
-    const avatarLarge = document.createElement('div');
-    avatarLarge.className = 'profile-avatar-large';
-    
-    const nameH = document.createElement('h3');
-    nameH.id = 'modalPlayerName';
-    nameH.textContent = userKey;
-    nameH.style.textAlign = 'center';
-    nameH.style.margin = '0 0 8px';
-    
-    const statsRow = document.createElement('div'); 
-    statsRow.className = 'profile-stats';
-    statsRow.innerHTML = `
-      <div class="stat-box">
-        <div class="stat-value" id="modalWins">0</div>
-        <div class="stat-label">Wins</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="modalLosses">0</div>
-        <div class="stat-label">Losses</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="modalDiff">0</div>
-        <div class="stat-label">Point Diff</div>
-      </div>
-    `;
-    
-    const gamesTitle = document.createElement('h4');
-    gamesTitle.textContent = 'Recent 1v1 Games';
-    gamesTitle.style.margin = '20px 0 12px';
-    
-    const gamesContainer = document.createElement('div'); 
-    gamesContainer.id = 'modalGames'; 
-    gamesContainer.className = 'small'; 
-    gamesContainer.textContent='Učitavanje...';
-
-    header.appendChild(avatarLarge);
-    header.appendChild(nameH);
-    
-    modalContent.innerHTML = ''; 
-    modalContent.appendChild(header); 
-    modalContent.appendChild(statsRow); 
-    modalContent.appendChild(gamesTitle);
-    modalContent.appendChild(gamesContainer);
-
-    (async ()=>{
-      try{
-        const usersRef = db.collection('users');
-        const q = await usersRef.where('key','==', userKey).limit(1).get();
-        if (!q.empty) {
-          const u = q.docs[0].data();
-          const displayName = u.displayName || u.name || userKey;
-          nameH.textContent = displayName;
-          
-          const initials = displayName.split(' ')
-            .map(n => n[0])
-            .join('')
-            .substring(0, 2)
-            .toUpperCase();
-          avatarLarge.textContent = initials;
-        } else {
-          const initials = userKey.substring(0, 2).toUpperCase();
-          avatarLarge.textContent = initials;
-        }
-      } catch(e){ 
-        console.warn('User lookup failed', e); 
-        const initials = userKey.substring(0, 2).toUpperCase();
-        avatarLarge.textContent = initials;
-      }
-    })();
-
-    const gamesRef = db.collection('games_1v1');
-    
-    const gamesMap = new Map();
-
-    function renderModalGames() {
-      const arr = Array.from(gamesMap.values()).sort((a,b)=>{ 
-        const da = a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().getTime() : (a.createdAt? new Date(a.createdAt).getTime():0); 
-        const dbt = b.createdAt && b.createdAt.toDate ? b.createdAt.toDate().getTime() : (b.createdAt? new Date(b.createdAt).getTime():0); 
-        return dbt-da; 
-      }).slice(0, 10);
-      
-      if (arr.length===0) { 
-        gamesContainer.textContent = 'Nema odigranih igara za prikaz.'; 
-        document.getElementById('modalWins').textContent='0'; 
-        document.getElementById('modalLosses').textContent='0'; 
-        document.getElementById('modalDiff').textContent='0'; 
-        return; 
-      }
-      
-      let wins=0, losses=0, pf=0, pa=0;
-      const table = document.createElement('table'); 
-      table.style.width='100%'; 
-      table.style.marginTop='8px';
-      table.innerHTML = '<thead><tr><th>Date</th><th>Opponent</th><th>Score</th><th>Result</th></tr></thead>'; 
-      const tbody=document.createElement('tbody');
-      
-      arr.forEach(g=>{ 
-        const t1 = (g.team1||'').toString().toLowerCase(); 
-        const t2 = (g.team2||'').toString().toLowerCase(); 
-        const team1Display = g.team1Display||g.team1||t1; 
-        const team2Display = g.team2Display||g.team2||t2; 
-        const score1=g.score1||0; 
-        const score2=g.score2||0; 
-        const dateVal = g.createdAt && g.createdAt.toDate ? g.createdAt.toDate() : (g.createdAt? new Date(g.createdAt): null); 
-        const dateStr = dateVal? dateVal.toLocaleString([], {dateStyle:'short', timeStyle:'short'}): '—'; 
-        
-        let myScore, oppScore, oppName; 
-        if (t1===userKey){ 
-          myScore=score1; 
-          oppScore=score2; 
-          oppName=team2Display; 
-        } else { 
-          myScore=score2; 
-          oppScore=score1; 
-          oppName=team1Display; 
-        } 
-        
-        pf+=myScore; 
-        pa+=oppScore; 
-        
-        let result=''; 
-        if (myScore>oppScore){ 
-          wins++; 
-          result='<span style="color:var(--success);font-weight:600">W</span>'; 
-        } else if (myScore<oppScore){ 
-          losses++; 
-          result='<span style="color:var(--error);font-weight:600">L</span>'; 
-        } else {
-          result='<span style="color:var(--muted)">D</span>';
-        }
-        
-        const tr=document.createElement('tr'); 
-        tr.innerHTML = `<td>${dateStr}</td><td>${oppName}</td><td>${myScore} – ${oppScore}</td><td style="text-align:center">${result}</td>`; 
-        tbody.appendChild(tr); 
-      }); 
-      
-      table.appendChild(tbody); 
-      gamesContainer.innerHTML=''; 
-      gamesContainer.appendChild(table); 
-      
-      document.getElementById('modalWins').textContent=String(wins); 
-      document.getElementById('modalLosses').textContent=String(losses); 
-      document.getElementById('modalDiff').textContent=String(pf-pa); 
-    }
-
-    profileUnsub1 = gamesRef.where('team1', '==', userKey).orderBy('createdAt','desc').limit(10).onSnapshot(snap => { 
-      snap.docChanges().forEach(ch=>{ 
-        if (ch.type==='removed') gamesMap.delete(ch.doc.id); 
-        else gamesMap.set(ch.doc.id, ch.doc.data()); 
-      }); 
-      renderModalGames(); 
-    });
-    
-    profileUnsub2 = gamesRef.where('team2', '==', userKey).orderBy('createdAt','desc').limit(10).onSnapshot(snap => { 
-      snap.docChanges().forEach(ch=>{ 
-        if (ch.type==='removed') gamesMap.delete(ch.doc.id); 
-        else gamesMap.set(ch.doc.id, ch.doc.data()); 
-      }); 
-      renderModalGames(); 
-    });
-  }
-
-  modalClose.addEventListener('click', () => { 
-    modalBackdrop.style.display = 'none'; 
-    modalContent.innerHTML=''; 
-    if (profileUnsub1) { profileUnsub1(); profileUnsub1=null; } 
-    if (profileUnsub2) { profileUnsub2(); profileUnsub2=null; } 
-  });
-  
-  modalBackdrop.addEventListener('click', (e)=>{ 
-    if (e.target===modalBackdrop){ 
-      modalClose.click(); 
-    } 
-  });
-
-  // ---------- NETWORK STATUS HANDLING ----------
-  window.addEventListener('online', () => {
-    isOnline = true;
-    console.log('Connection restored');
-    offlineIndicator.style.display = 'none';
-    if (currentUser) {
-      loadReservations().then(() => renderCalendar());
-    }
-  });
-
-  window.addEventListener('offline', () => {
-    isOnline = false;
-    console.log('Connection lost - working offline');
-    offlineIndicator.style.display = 'block';
-  });
-
-  // ---------- PWA INSTALL FUNCTIONALITY ----------
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'inline-block';
-  });
-
-  installBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`PWA install outcome: ${outcome}`);
-      deferredPrompt = null;
-      installBtn.style.display = 'none';
-    }
-  });
-
-  window.addEventListener('appinstalled', () => {
-    installBtn.style.display = 'none';
-    console.log('PWA was installed');
-  });
-
-  // ---------- SERVICE WORKER REGISTRATION ----------
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service_worker.js')
-        .then(reg => {
-          console.log('Service Worker registered successfully:', reg);
-          
-          setInterval(() => {
-            reg.update();
-          }, 60000);
-          
-          window.addEventListener('focus', () => {
-            reg.update();
-          });
-          
-          reg.addEventListener('updatefound', () => {
-            const newServiceWorker = reg.installing;
-            newServiceWorker.addEventListener('statechange', () => {
-              if (newServiceWorker.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                  showUpdateNotification();
-                } else {
-                  console.log('Service Worker installed for the first time');
-                }
-              }
-            });
-          });
-          
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('New service worker is controlling the page');
-            window.location.reload();
-          });
-        })
-        .catch(err => {
-          console.error('Service Worker registration failed:', err);
-        });
-      
-      navigator.serviceWorker.register('./OneSignalSDKWorker.js')
-        .then(reg => {
-          console.log('OneSignal Service Worker registered:', reg);
-        })
-        .catch(err => {
-          console.error('OneSignal Service Worker registration failed:', err);
-        });
+        .then(reg => console.log('Service Worker registered:', reg))
+        .catch(err => console.log('Service Worker registration failed:', err));
     });
   }
-
-  function showUpdateNotification() {
-    const updateBanner = document.createElement('div');
-    updateBanner.className = 'update-banner';
-    updateBanner.style.display = 'flex';
-    updateBanner.innerHTML = `
-      <span>🔄 Nova verzija dostupna!</span>
-      <button id="updateNowBtn">Ažuriraj Sada</button>
-    `;
-    document.body.appendChild(updateBanner);
-    
-    document.getElementById('updateNowBtn').addEventListener('click', () => {
-      console.log('User clicked update button');
-      window.location.reload();
-    });
-  }
-
-  console.log('All event listeners registered. App ready!');
 </script>
 </body>
 </html>
