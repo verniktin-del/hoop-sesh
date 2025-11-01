@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1D428A">
- <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Hoops Admin">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
@@ -90,7 +90,6 @@
       font-weight:700;
     }
 
-    /* Tab navigation */
     .tab-nav{
       display:flex;
       gap:8px;
@@ -178,7 +177,6 @@
     .center{text-align:center;}
     .small{font-size:13px;color:var(--muted);}
     
-    /* Player input groups */
     .player-group{
       background:var(--bg);
       padding:12px;
@@ -196,6 +194,17 @@
       flex-direction:column;
       gap:8px;
     }
+    .player-with-points{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:8px;
+      align-items:end;
+    }
+    .points-label{
+      font-size:11px;
+      color:var(--muted);
+      margin-bottom:4px;
+    }
 
     @media (max-width:768px){
       #adminWrapper{
@@ -210,7 +219,6 @@
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginWrapper">
   <div id="loginBox">
     <h1>Admin - Log Games</h1>
@@ -222,7 +230,6 @@
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
 <div id="adminWrapper">
   <header class="adminHeader">
     <div class="brand">
@@ -235,7 +242,6 @@
     </div>
   </header>
 
-  <!-- Tab Navigation -->
   <div class="tab-nav">
     <button class="tab-btn active" data-tab="1v1">🏀 1v1</button>
     <button class="tab-btn" data-tab="2v2">👥 2v2</button>
@@ -243,7 +249,6 @@
     <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
   </div>
 
-  <!-- 1v1 Tab -->
   <div id="1v1Tab" class="tab-content active">
     <div class="formCard">
       <h3>Log 1v1 Game</h3>
@@ -297,7 +302,6 @@
     </div>
   </div>
 
-  <!-- 2v2 Tab -->
   <div id="2v2Tab" class="tab-content">
     <div class="formCard">
       <h3>Log 2v2 Game</h3>
@@ -305,41 +309,73 @@
         <div class="player-group">
           <div class="player-group-title">Team 1</div>
           <div class="player-inputs">
-            <select id="player1_2v2" required>
-              <option value="">-- select player 1 --</option>
-            </select>
-            <input type="text" id="player1New_2v2" placeholder="Enter new player 1 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player1_2v2" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player1New_2v2" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player1Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
             
-            <select id="player2_2v2" required>
-              <option value="">-- select player 2 --</option>
-            </select>
-            <input type="text" id="player2New_2v2" placeholder="Enter new player 2 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player2_2v2" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player2New_2v2" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player2Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="formRow">
-          <label>Team 1 Score</label>
-          <input type="number" id="score1_2v2" placeholder="Team 1 Score" required>
+          <label>Team 1 Score (Total)</label>
+          <input type="number" id="score1_2v2" placeholder="Team 1 Score" required readonly>
         </div>
 
         <div class="player-group">
           <div class="player-group-title">Team 2</div>
           <div class="player-inputs">
-            <select id="player3_2v2" required>
-              <option value="">-- select player 1 --</option>
-            </select>
-            <input type="text" id="player3New_2v2" placeholder="Enter new player 1 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player3_2v2" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player3New_2v2" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player3Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
             
-            <select id="player4_2v2" required>
-              <option value="">-- select player 2 --</option>
-            </select>
-            <input type="text" id="player4New_2v2" placeholder="Enter new player 2 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player4_2v2" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player4New_2v2" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player4Points_2v2" placeholder="Pts" min="0" required>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="formRow">
-          <label>Team 2 Score</label>
-          <input type="number" id="score2_2v2" placeholder="Team 2 Score" required>
+          <label>Team 2 Score (Total)</label>
+          <input type="number" id="score2_2v2" placeholder="Team 2 Score" required readonly>
         </div>
 
         <button type="submit" class="primaryBtn">Log 2v2 Game</button>
@@ -365,7 +401,6 @@
     </div>
   </div>
 
-  <!-- 3v3 Tab -->
   <div id="3v3Tab" class="tab-content">
     <div class="formCard">
       <h3>Log 3v3 Game</h3>
@@ -373,51 +408,99 @@
         <div class="player-group">
           <div class="player-group-title">Team 1</div>
           <div class="player-inputs">
-            <select id="player1_3v3" required>
-              <option value="">-- select player 1 --</option>
-            </select>
-            <input type="text" id="player1New_3v3" placeholder="Enter new player 1 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player1_3v3" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player1New_3v3" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player1Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
             
-            <select id="player2_3v3" required>
-              <option value="">-- select player 2 --</option>
-            </select>
-            <input type="text" id="player2New_3v3" placeholder="Enter new player 2 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player2_3v3" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player2New_3v3" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player2Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
             
-            <select id="player3_3v3" required>
-              <option value="">-- select player 3 --</option>
-            </select>
-            <input type="text" id="player3New_3v3" placeholder="Enter new player 3 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player3_3v3" required>
+                  <option value="">-- select player 3 --</option>
+                </select>
+                <input type="text" id="player3New_3v3" placeholder="Enter new player 3 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player3Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="formRow">
-          <label>Team 1 Score</label>
-          <input type="number" id="score1_3v3" placeholder="Team 1 Score" required>
+          <label>Team 1 Score (Total)</label>
+          <input type="number" id="score1_3v3" placeholder="Team 1 Score" required readonly>
         </div>
 
         <div class="player-group">
           <div class="player-group-title">Team 2</div>
           <div class="player-inputs">
-            <select id="player4_3v3" required>
-              <option value="">-- select player 1 --</option>
-            </select>
-            <input type="text" id="player4New_3v3" placeholder="Enter new player 1 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player4_3v3" required>
+                  <option value="">-- select player 1 --</option>
+                </select>
+                <input type="text" id="player4New_3v3" placeholder="Enter new player 1 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player4Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
             
-            <select id="player5_3v3" required>
-              <option value="">-- select player 2 --</option>
-            </select>
-            <input type="text" id="player5New_3v3" placeholder="Enter new player 2 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player5_3v3" required>
+                  <option value="">-- select player 2 --</option>
+                </select>
+                <input type="text" id="player5New_3v3" placeholder="Enter new player 2 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player5Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
             
-            <select id="player6_3v3" required>
-              <option value="">-- select player 3 --</option>
-            </select>
-            <input type="text" id="player6New_3v3" placeholder="Enter new player 3 name" style="display:none;">
+            <div class="player-with-points">
+              <div>
+                <select id="player6_3v3" required>
+                  <option value="">-- select player 3 --</option>
+                </select>
+                <input type="text" id="player6New_3v3" placeholder="Enter new player 3 name" style="display:none;">
+              </div>
+              <div>
+                <div class="points-label">Points</div>
+                <input type="number" id="player6Points_3v3" placeholder="Pts" min="0" required>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="formRow">
-          <label>Team 2 Score</label>
-          <input type="number" id="score2_3v3" placeholder="Team 2 Score" required>
+          <label>Team 2 Score (Total)</label>
+          <input type="number" id="score2_3v3" placeholder="Team 2 Score" required readonly>
         </div>
 
         <button type="submit" class="primaryBtn">Log 3v3 Game</button>
@@ -443,14 +526,14 @@
     </div>
   </div>
 
-  <!-- Leaderboard Tab -->
   <div id="leaderboardTab" class="tab-content">
     <div class="leaderboardCard">
-      <h3>Leaderboard (1v1 Only)</h3>
+      <h3>1v1 Leaderboard</h3>
       <div id="leaderboardLoading" class="small">Učitavanje...</div>
       <table id="leaderboardTable" style="display:none;">
         <thead>
           <tr>
+            <th style="width:60px" class="center">#</th>
             <th>Name</th>
             <th class="center">Wins</th>
             <th class="center">Losses</th>
@@ -493,12 +576,10 @@
   const logoutBtn = document.getElementById("logoutBtn");
   const userEmail = document.getElementById("userEmail");
 
-  // Forms
   const log1v1Form = document.getElementById("log1v1Form");
   const log2v2Form = document.getElementById("log2v2Form");
   const log3v3Form = document.getElementById("log3v3Form");
 
-  // Game tables
   const games1v1Loading = document.getElementById("games1v1Loading");
   const games1v1Table = document.getElementById("games1v1Table");
   const games1v1Body = document.getElementById("games1v1Body");
@@ -526,7 +607,56 @@
     return (s || '').toString().trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g,'');
   }
 
-  // Google login
+  // Auto-calculate team scores for 2v2
+  const player1Points2v2 = document.getElementById('player1Points_2v2');
+  const player2Points2v2 = document.getElementById('player2Points_2v2');
+  const player3Points2v2 = document.getElementById('player3Points_2v2');
+  const player4Points2v2 = document.getElementById('player4Points_2v2');
+  const score1_2v2 = document.getElementById('score1_2v2');
+  const score2_2v2 = document.getElementById('score2_2v2');
+
+  function updateScore2v2() {
+    const p1 = parseInt(player1Points2v2.value) || 0;
+    const p2 = parseInt(player2Points2v2.value) || 0;
+    const p3 = parseInt(player3Points2v2.value) || 0;
+    const p4 = parseInt(player4Points2v2.value) || 0;
+    score1_2v2.value = p1 + p2;
+    score2_2v2.value = p3 + p4;
+  }
+
+  player1Points2v2.addEventListener('input', updateScore2v2);
+  player2Points2v2.addEventListener('input', updateScore2v2);
+  player3Points2v2.addEventListener('input', updateScore2v2);
+  player4Points2v2.addEventListener('input', updateScore2v2);
+
+  // Auto-calculate team scores for 3v3
+  const player1Points3v3 = document.getElementById('player1Points_3v3');
+  const player2Points3v3 = document.getElementById('player2Points_3v3');
+  const player3Points3v3 = document.getElementById('player3Points_3v3');
+  const player4Points3v3 = document.getElementById('player4Points_3v3');
+  const player5Points3v3 = document.getElementById('player5Points_3v3');
+  const player6Points3v3 = document.getElementById('player6Points_3v3');
+  const score1_3v3 = document.getElementById('score1_3v3');
+  const score2_3v3 = document.getElementById('score2_3v3');
+
+  function updateScore3v3() {
+    const p1 = parseInt(player1Points3v3.value) || 0;
+    const p2 = parseInt(player2Points3v3.value) || 0;
+    const p3 = parseInt(player3Points3v3.value) || 0;
+    const p4 = parseInt(player4Points3v3.value) || 0;
+    const p5 = parseInt(player5Points3v3.value) || 0;
+    const p6 = parseInt(player6Points3v3.value) || 0;
+    score1_3v3.value = p1 + p2 + p3;
+    score2_3v3.value = p4 + p5 + p6;
+  }
+
+  player1Points3v3.addEventListener('input', updateScore3v3);
+  player2Points3v3.addEventListener('input', updateScore3v3);
+  player3Points3v3.addEventListener('input', updateScore3v3);
+  player4Points3v3.addEventListener('input', updateScore3v3);
+  player5Points3v3.addEventListener('input', updateScore3v3);
+  player6Points3v3.addEventListener('input', updateScore3v3);
+
   loginBtn.addEventListener("click", async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -548,14 +678,12 @@
       return;
     }
 
-    // Check if user is admin
     if (user.email === "linovernik@gmail.com") {
       currentUser = user;
       loginWrapper.style.display = "none";
       adminWrapper.style.display = "block";
       userEmail.textContent = user.email;
 
-      // Load admin data
       loadUsersForSelects().catch(err => console.error("Load users error", err));
       load1v1Games().catch(err => console.error("Load 1v1 games error", err));
     } else {
@@ -564,17 +692,13 @@
     }
   });
 
-  // Tab navigation
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
       btn.classList.add('active');
       const tabId = btn.dataset.tab + 'Tab';
       document.getElementById(tabId).classList.add('active');
-      
-      // Load data for specific tab
       if (btn.dataset.tab === '1v1') {
         load1v1Games();
       } else if (btn.dataset.tab === '2v2') {
@@ -587,12 +711,9 @@
     });
   });
 
-  // Load users into dropdowns
   async function loadUsersForSelects() {
     usersCache = {};
-    
     const usersSnap = await getDocs(collection(db, "users"));
-    
     const defaultOpt = document.createElement("option");
     defaultOpt.value = "";
     defaultOpt.textContent = "-- select player --";
@@ -601,7 +722,6 @@
     otherOpt.value = "__new__";
     otherOpt.textContent = "Other / New...";
 
-    // Populate all select elements
     const selects = [
       'player1_1v1', 'player2_1v1',
       'player1_2v2', 'player2_2v2', 'player3_2v2', 'player4_2v2',
@@ -629,16 +749,16 @@
       });
     });
 
-    // Add "Other / New..." option to all selects
     selects.forEach(selectId => {
       const select = document.getElementById(selectId);
       select.appendChild(otherOpt.cloneNode(true));
     });
 
-    // Setup change listeners for showing/hiding new input fields
     selects.forEach(selectId => {
       const select = document.getElementById(selectId);
-      const newInput = document.getElementById(selectId.replace(/_\dv\d/, 'New_' + selectId.split('_')[1]));
+      const gameType = selectId.includes('1v1') ? '1v1' : (selectId.includes('2v2') ? '2v2' : '3v3');
+      const playerNum = selectId.match(/player(\d)/)[1];
+      const newInput = document.getElementById(`player${playerNum}New_${gameType}`);
       if (newInput) {
         select.addEventListener("change", () => {
           newInput.style.display = select.value === "__new__" ? "block" : "none";
@@ -647,11 +767,9 @@
     });
   }
 
-  // Helper function to get player name/key
   function getPlayerData(selectId, newInputId) {
     const select = document.getElementById(selectId);
     const newInput = document.getElementById(newInputId);
-    
     if (select.value === "__new__") {
       const displayName = newInput.value.trim();
       if (!displayName) return null;
@@ -665,22 +783,16 @@
     return null;
   }
 
-  // ---------- 1V1 GAME LOGGING ----------
   log1v1Form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const player1 = getPlayerData('player1_1v1', 'player1New_1v1');
     const player2 = getPlayerData('player2_1v1', 'player2New_1v1');
-
     if (!player1) { alert("Enter Player 1"); return; }
     if (!player2) { alert("Enter Player 2"); return; }
-
     const score1 = parseInt(document.getElementById("score1_1v1").value);
     const score2 = parseInt(document.getElementById("score2_1v1").value);
-
     if (isNaN(score1) || isNaN(score2)) { alert("Enter valid scores"); return; }
     if (player1.key === player2.key) { alert("Players must be different"); return; }
-
     try {
       await addDoc(collection(db,"games_1v1"),{
         team1: player1.key,
@@ -692,12 +804,10 @@
         winner: score1 > score2 ? player1.key : player2.key,
         createdAt: new Date()
       });
-
       alert("1v1 Game logged successfully!");
       log1v1Form.reset();
       document.getElementById('player1New_1v1').style.display = 'none';
       document.getElementById('player2New_1v1').style.display = 'none';
-
       await loadUsersForSelects();
       await load1v1Games();
     } catch (error) {
@@ -707,90 +817,87 @@
   });
 
   async function load1v1Games() {
-  games1v1Loading.style.display = '';
-  games1v1Table.style.display = 'none';
-  games1v1Empty.style.display = 'none';
-  games1v1Body.innerHTML = '';
-
-  try {
-    const gamesSnap = await getDocs(collection(db, 'games_1v1'));
-
-    if (gamesSnap.empty) {
+    games1v1Loading.style.display = '';
+    games1v1Table.style.display = 'none';
+    games1v1Empty.style.display = 'none';
+    games1v1Body.innerHTML = '';
+    try {
+      const gamesSnap = await getDocs(collection(db, 'games_1v1'));
+      if (gamesSnap.empty) {
+        games1v1Loading.style.display = 'none';
+        games1v1Empty.style.display = '';
+        return;
+      }
+      const games = [];
+      gamesSnap.forEach(doc => {
+        games.push({ id: doc.id, ...doc.data() });
+      });
+      games.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA;
+      });
+      games.slice(0, 20).forEach(game => {
+        const tr = document.createElement("tr");
+        const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
+        let winnerText = '—';
+        if ((game.score1 || 0) > (game.score2 || 0)) {
+          winnerText = game.team1Display || game.team1;
+        } else if ((game.score2 || 0) > (game.score1 || 0)) {
+          winnerText = game.team2Display || game.team2;
+        }
+        tr.innerHTML = `
+          <td>${date}</td>
+          <td>${game.team1Display || game.team1}</td>
+          <td class="center"><strong>${game.score1 || 0} - ${game.score2 || 0}</strong></td>
+          <td>${game.team2Display || game.team2}</td>
+          <td class="center">${winnerText}</td>
+        `;
+        games1v1Body.appendChild(tr);
+      });
+      games1v1Loading.style.display = 'none';
+      games1v1Table.style.display = '';
+    } catch (error) {
+      console.error('Error loading 1v1 games:', error);
       games1v1Loading.style.display = 'none';
       games1v1Empty.style.display = '';
-      return;
     }
-
-    const games = [];
-    gamesSnap.forEach(doc => {
-      games.push({ id: doc.id, ...doc.data() });
-    });
-
-    games.sort((a, b) => {
-      const dateA = a.createdAt?.seconds || 0;
-      const dateB = b.createdAt?.seconds || 0;
-      return dateB - dateA;
-    });
-
-    games.slice(0, 20).forEach(game => {
-      const tr = document.createElement("tr");
-      const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
-      let winnerText = '—';
-      if ((game.score1 || 0) > (game.score2 || 0)) {
-        winnerText = game.team1Display || game.team1;
-      } else if ((game.score2 || 0) > (game.score1 || 0)) {
-        winnerText = game.team2Display || game.team2;
-      }
-
-      tr.innerHTML = `
-        <td>${date}</td>
-        <td>${game.team1Display || game.team1}</td>
-        <td class="center"><strong>${game.score1 || 0} - ${game.score2 || 0}</strong></td>
-        <td>${game.team2Display || game.team2}</td>
-        <td class="center">${winnerText}</td>
-      `;
-      games1v1Body.appendChild(tr);
-    });
-
-    games1v1Loading.style.display = 'none';
-    games1v1Table.style.display = '';
-  } catch (error) {
-    console.error('Error loading 1v1 games:', error);
-    games1v1Loading.style.display = 'none';
-    games1v1Empty.style.display = '';
   }
-}
-  // ---------- 2V2 GAME LOGGING ----------
+
   log2v2Form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const player1 = getPlayerData('player1_2v2', 'player1New_2v2');
     const player2 = getPlayerData('player2_2v2', 'player2New_2v2');
     const player3 = getPlayerData('player3_2v2', 'player3New_2v2');
     const player4 = getPlayerData('player4_2v2', 'player4New_2v2');
-
     if (!player1 || !player2 || !player3 || !player4) {
       alert("Please select or enter all 4 players");
       return;
     }
-
-    const score1 = parseInt(document.getElementById("score1_2v2").value);
-    const score2 = parseInt(document.getElementById("score2_2v2").value);
-
-    if (isNaN(score1) || isNaN(score2)) { alert("Enter valid scores"); return; }
-
-    // Check for duplicate players
+    const p1Points = parseInt(document.getElementById("player1Points_2v2").value);
+    const p2Points = parseInt(document.getElementById("player2Points_2v2").value);
+    const p3Points = parseInt(document.getElementById("player3Points_2v2").value);
+    const p4Points = parseInt(document.getElementById("player4Points_2v2").value);
+    if (isNaN(p1Points) || isNaN(p2Points) || isNaN(p3Points) || isNaN(p4Points)) {
+      alert("Enter valid points for all players");
+      return;
+    }
+    const score1 = p1Points + p2Points;
+    const score2 = p3Points + p4Points;
     const playerKeys = [player1.key, player2.key, player3.key, player4.key];
     const uniqueKeys = new Set(playerKeys);
     if (uniqueKeys.size !== 4) {
       alert("All players must be different");
       return;
     }
-
     try {
       const team1Display = `${player1.displayName} & ${player2.displayName}`;
       const team2Display = `${player3.displayName} & ${player4.displayName}`;
-
+      const playerPoints = {};
+      playerPoints[player1.key] = p1Points;
+      playerPoints[player2.key] = p2Points;
+      playerPoints[player3.key] = p3Points;
+      playerPoints[player4.key] = p4Points;
       await addDoc(collection(db,"games_2v2"),{
         team1Players: [player1.key, player2.key],
         team1Display,
@@ -798,16 +905,15 @@
         team2Players: [player3.key, player4.key],
         team2Display,
         score2,
+        playerPoints,
         winner: score1 > score2 ? 'team1' : 'team2',
         createdAt: new Date()
       });
-
       alert("2v2 Game logged successfully!");
       log2v2Form.reset();
       ['player1New_2v2', 'player2New_2v2', 'player3New_2v2', 'player4New_2v2'].forEach(id => {
         document.getElementById(id).style.display = 'none';
       });
-
       await loadUsersForSelects();
       await load2v2Games();
     } catch (error) {
@@ -821,38 +927,31 @@
     games2v2Table.style.display = 'none';
     games2v2Empty.style.display = 'none';
     games2v2Body.innerHTML = '';
-
     try {
       const gamesSnap = await getDocs(collection(db, 'games_2v2'));
-      
       if (gamesSnap.empty) {
         games2v2Loading.style.display = 'none';
         games2v2Empty.style.display = '';
         return;
       }
-
       const games = [];
       gamesSnap.forEach(doc => {
         games.push({ id: doc.id, ...doc.data() });
       });
-
       games.sort((a, b) => {
         const dateA = a.createdAt?.seconds || 0;
         const dateB = b.createdAt?.seconds || 0;
         return dateB - dateA;
       });
-
       games.slice(0, 20).forEach(game => {
         const tr = document.createElement("tr");
         const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
-        
         let winnerText = '—';
         if ((game.score1 || 0) > (game.score2 || 0)) {
           winnerText = game.team1Display || 'Team 1';
         } else if ((game.score2 || 0) > (game.score1 || 0)) {
           winnerText = game.team2Display || 'Team 2';
         }
-
         tr.innerHTML = `
           <td>${date}</td>
           <td>${game.team1Display || 'Team 1'}</td>
@@ -862,7 +961,6 @@
         `;
         games2v2Body.appendChild(tr);
       });
-
       games2v2Loading.style.display = 'none';
       games2v2Table.style.display = '';
     } catch (error) {
@@ -872,39 +970,46 @@
     }
   }
 
-  // ---------- 3V3 GAME LOGGING ----------
   log3v3Form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const player1 = getPlayerData('player1_3v3', 'player1New_3v3');
     const player2 = getPlayerData('player2_3v3', 'player2New_3v3');
     const player3 = getPlayerData('player3_3v3', 'player3New_3v3');
     const player4 = getPlayerData('player4_3v3', 'player4New_3v3');
     const player5 = getPlayerData('player5_3v3', 'player5New_3v3');
     const player6 = getPlayerData('player6_3v3', 'player6New_3v3');
-
     if (!player1 || !player2 || !player3 || !player4 || !player5 || !player6) {
       alert("Please select or enter all 6 players");
       return;
     }
-
-    const score1 = parseInt(document.getElementById("score1_3v3").value);
-    const score2 = parseInt(document.getElementById("score2_3v3").value);
-
-    if (isNaN(score1) || isNaN(score2)) { alert("Enter valid scores"); return; }
-
-    // Check for duplicate players
+    const p1Points = parseInt(document.getElementById("player1Points_3v3").value);
+    const p2Points = parseInt(document.getElementById("player2Points_3v3").value);
+    const p3Points = parseInt(document.getElementById("player3Points_3v3").value);
+    const p4Points = parseInt(document.getElementById("player4Points_3v3").value);
+    const p5Points = parseInt(document.getElementById("player5Points_3v3").value);
+    const p6Points = parseInt(document.getElementById("player6Points_3v3").value);
+    if (isNaN(p1Points) || isNaN(p2Points) || isNaN(p3Points) || isNaN(p4Points) || isNaN(p5Points) || isNaN(p6Points)) {
+      alert("Enter valid points for all players");
+      return;
+    }
+    const score1 = p1Points + p2Points + p3Points;
+    const score2 = p4Points + p5Points + p6Points;
     const playerKeys = [player1.key, player2.key, player3.key, player4.key, player5.key, player6.key];
     const uniqueKeys = new Set(playerKeys);
     if (uniqueKeys.size !== 6) {
       alert("All players must be different");
       return;
     }
-
     try {
       const team1Display = `${player1.displayName}, ${player2.displayName} & ${player3.displayName}`;
       const team2Display = `${player4.displayName}, ${player5.displayName} & ${player6.displayName}`;
-
+      const playerPoints = {};
+      playerPoints[player1.key] = p1Points;
+      playerPoints[player2.key] = p2Points;
+      playerPoints[player3.key] = p3Points;
+      playerPoints[player4.key] = p4Points;
+      playerPoints[player5.key] = p5Points;
+      playerPoints[player6.key] = p6Points;
       await addDoc(collection(db,"games_3v3"),{
         team1Players: [player1.key, player2.key, player3.key],
         team1Display,
@@ -912,16 +1017,15 @@
         team2Players: [player4.key, player5.key, player6.key],
         team2Display,
         score2,
+        playerPoints,
         winner: score1 > score2 ? 'team1' : 'team2',
         createdAt: new Date()
       });
-
       alert("3v3 Game logged successfully!");
       log3v3Form.reset();
       ['player1New_3v3', 'player2New_3v3', 'player3New_3v3', 'player4New_3v3', 'player5New_3v3', 'player6New_3v3'].forEach(id => {
         document.getElementById(id).style.display = 'none';
       });
-
       await loadUsersForSelects();
       await load3v3Games();
     } catch (error) {
@@ -935,38 +1039,31 @@
     games3v3Table.style.display = 'none';
     games3v3Empty.style.display = 'none';
     games3v3Body.innerHTML = '';
-
     try {
       const gamesSnap = await getDocs(collection(db, 'games_3v3'));
-      
       if (gamesSnap.empty) {
         games3v3Loading.style.display = 'none';
         games3v3Empty.style.display = '';
         return;
       }
-
       const games = [];
       gamesSnap.forEach(doc => {
         games.push({ id: doc.id, ...doc.data() });
       });
-
       games.sort((a, b) => {
         const dateA = a.createdAt?.seconds || 0;
         const dateB = b.createdAt?.seconds || 0;
         return dateB - dateA;
       });
-
       games.slice(0, 20).forEach(game => {
         const tr = document.createElement("tr");
         const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
-        
         let winnerText = '—';
         if ((game.score1 || 0) > (game.score2 || 0)) {
           winnerText = game.team1Display || 'Team 1';
         } else if ((game.score2 || 0) > (game.score1 || 0)) {
           winnerText = game.team2Display || 'Team 2';
         }
-
         tr.innerHTML = `
           <td>${date}</td>
           <td>${game.team1Display || 'Team 1'}</td>
@@ -976,7 +1073,6 @@
         `;
         games3v3Body.appendChild(tr);
       });
-
       games3v3Loading.style.display = 'none';
       games3v3Table.style.display = '';
     } catch (error) {
@@ -986,27 +1082,21 @@
     }
   }
 
-  // ---------- LEADERBOARD ----------
   async function loadLeaderboard() {
     leaderboardLoading.style.display = '';
     leaderboardTable.style.display = 'none';
     leaderboardEmpty.style.display = 'none';
     leaderboardBody.innerHTML = '';
-
     try {
       const usersMap = {};
-
       const gamesSnap = await getDocs(collection(db, 'games_1v1'));
       let gameCount = 0;
-      
       gamesSnap.forEach(docSnap => {
         const g = docSnap.data();
         const t1Key = (g.team1 || g.team1Key || '').toString().toLowerCase();
         const t2Key = (g.team2 || g.team2Key || '').toString().toLowerCase();
-        
         if (!t1Key || !t2Key) return;
         gameCount++;
-        
         if (!usersMap[t1Key]) {
           usersMap[t1Key] = { 
             key: t1Key, 
@@ -1027,12 +1117,10 @@
             pointsAgainst: 0 
           };
         }
-        
         usersMap[t1Key].pointsFor += (g.score1 || 0);
         usersMap[t1Key].pointsAgainst += (g.score2 || 0);
         usersMap[t2Key].pointsFor += (g.score2 || 0);
         usersMap[t2Key].pointsAgainst += (g.score1 || 0);
-        
         if ((g.score1 || 0) > (g.score2 || 0)) { 
           usersMap[t1Key].wins += 1; 
           usersMap[t2Key].losses += 1; 
@@ -1041,32 +1129,34 @@
           usersMap[t1Key].losses += 1; 
         }
       });
-
       leaderboardLoading.style.display = 'none';
-      
       if (gameCount === 0) {
         leaderboardEmpty.style.display = '';
         leaderboardEmpty.textContent = 'Nema odigranih igara za prikaz.';
         return;
       }
-      
       const leaderboardArray = Object.values(usersMap);
       leaderboardArray.sort((a,b)=>{
         if (b.wins !== a.wins) return b.wins - a.wins;
         return (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
       });
-
-      leaderboardArray.forEach(u=>{
+      leaderboardArray.forEach((u, idx)=>{
+        const rank = idx + 1;
         const tr = document.createElement("tr");
+        let rankBadge = '';
+        if (rank === 1) rankBadge = '🥇';
+        else if (rank === 2) rankBadge = '🥈';
+        else if (rank === 3) rankBadge = '🥉';
+        else rankBadge = rank;
         tr.innerHTML = `
+          <td style="padding:6px;text-align:center;font-weight:700;">${rankBadge}</td>
           <td style="padding:6px;">${u.name}</td>
-          <td style="padding:6px; text-align:center;">${u.wins}</td>
-          <td style="padding:6px; text-align:center;">${u.losses}</td>
-          <td style="padding:6px; text-align:center;">${u.pointsFor - u.pointsAgainst}</td>
+          <td style="padding:6px;text-align:center;">${u.wins}</td>
+          <td style="padding:6px;text-align:center;">${u.losses}</td>
+          <td style="padding:6px;text-align:center;">${u.pointsFor - u.pointsAgainst}</td>
         `;
         leaderboardBody.appendChild(tr);
       });
-
       leaderboardTable.style.display = '';
     } catch (error) {
       console.error('Error loading leaderboard:', error);
@@ -1076,7 +1166,6 @@
     }
   }
 
-  // Service Worker registration
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service_worker.js')
@@ -1087,43 +1176,3 @@
 </script>
 </body>
 </html>
-        games1v1Empty.style.display = '';
-        return;
-      }
-
-      const games = [];
-      gamesSnap.forEach(doc => {
-        games.push({ id: doc.id, ...doc.data() });
-      });
-
-      games.sort((a, b) => {
-        const dateA = a.createdAt?.seconds || 0;
-        const dateB = b.createdAt?.seconds || 0;
-        return dateB - dateA;
-      });
-
-      games.slice(0, 20).forEach(game => {
-        const tr = document.createElement("tr");
-        const date = game.createdAt ? new Date(game.createdAt.seconds * 1000).toLocaleString('hr-HR') : '—';
-        
-        let winnerText = '—';
-        if ((game.score1 || 0) > (game.score2 || 0)) {
-          winnerText = game.team1Display || game.team1;
-        } else if ((game.score2 || 0) > (game.score1 || 0)) {
-          winnerText = game.team2Display || game.team2;
-        }
-
-        tr.innerHTML = `
-          <td>${date}</td>
-          <td>${game.team1Display || game.team1}</td>
-          <td class="center"><strong>${game.score1 || 0} - ${game.score2 || 0}</strong></td>
-          <td>${game.team2Display || game.team2}</td>
-          <td class="center">${winnerText}</td>
-        `;
-        games1v1Body.appendChild(tr);
-      });
-
-      games1v1Loading.style.display = 'none';
-
-
-
