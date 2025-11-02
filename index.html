@@ -916,22 +916,58 @@
   // Initialize OneSignal
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "4b47aa4a-a11e-4f44-bab0-874fcfdf8e3f",
-    });
-    
-    console.log('OneSignal initialized');
-    
-    // Listen for notification permission
-    OneSignal.Notifications.addEventListener('permissionChange', (granted) => {
-      console.log('Notification permission changed:', granted);
-    });
-    
-    // Request permission
-    const permission = await OneSignal.Notifications.permission;
-    if (!permission) {
-      console.log('Requesting notification permission...');
-      await OneSignal.Notifications.requestPermission();
+    try {
+      await OneSignal.init({
+        appId: "4b47aa4a-a11e-4f44-bab0-874fcfdf8e3f",
+        safari_web_id: "web.onesignal.auto.xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        notifyButton: {
+          enable: false,
+        },
+        allowLocalhostAsSecureOrigin: true,
+      });
+      
+      console.log('OneSignal initialized');
+      
+      // Check current permission status
+      const isPushSupported = await OneSignal.Notifications.isPushSupported();
+      console.log('Push supported:', isPushSupported);
+      
+      const permission = await OneSignal.Notifications.permission;
+      console.log('Current permission:', permission);
+      
+      // Listen for permission changes
+      OneSignal.Notifications.addEventListener('permissionChange', (granted) => {
+        console.log('Notification permission changed:', granted);
+      });
+      
+      // Request permission if not yet granted
+      if (!permission) {
+        console.log('Requesting notification permission...');
+        const accepted = await OneSignal.Notifications.requestPermission();
+        console.log('Permission request result:', accepted);
+      }
+      
+      // Get the subscription ID (player ID)
+      OneSignal.User.PushSubscription.addEventListener('change', (subscription) => {
+        console.log('Push subscription changed:', subscription);
+        if (subscription.current.id) {
+          console.log('OneSignal Player ID:', subscription.current.id);
+          // Store player ID if needed
+          try {
+            localStorage.setItem('onesignal_player_id', subscription.current.id);
+          } catch(e) {
+            console.error('Could not save player ID:', e);
+          }
+        }
+      });
+      
+      // Listen for notification clicks
+      OneSignal.Notifications.addEventListener('click', (event) => {
+        console.log('Notification clicked:', event);
+      });
+      
+    } catch (error) {
+      console.error('OneSignal initialization error:', error);
     }
   });
 
@@ -1044,21 +1080,30 @@
   // ---------- ONESIGNAL NOTIFICATION FUNCTIONS ----------
   async function sendGameNotification(gameType, team1Display, team2Display, score1, score2) {
     try {
-      // Send notification via OneSignal
+      const message = `Nova ${gameType} igra: ${team1Display} ${score1} - ${score2} ${team2Display}`;
+      console.log('Sending game notification:', message);
+      
+      // Show local notification if permission granted
       OneSignalDeferred.push(async function(OneSignal) {
-        const message = `Nova ${gameType} igra: ${team1Display} ${score1} - ${score2} ${team2Display}`;
-        
-        // Show local notification
-        if (await OneSignal.Notifications.permission) {
-          new Notification('Hoops', {
-            body: message,
-            icon: './assets/icon-192.png',
-            badge: './assets/icon-192.png'
-          });
+        const permission = await OneSignal.Notifications.permission;
+        if (permission) {
+          // Display local notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Hoops - Nova Igra', {
+              body: message,
+              icon: './assets/icon-192.png',
+              badge: './assets/icon-192.png',
+              tag: 'game-notification',
+              requireInteraction: false
+            });
+          }
         }
-        
-        console.log('Game notification sent:', message);
       });
+      
+      // Send push notification to all subscribers via OneSignal REST API
+      // Note: This requires server-side implementation with your OneSignal REST API key
+      // For now, we're just showing local notifications
+      
     } catch (error) {
       console.error('Error sending game notification:', error);
     }
@@ -1066,19 +1111,25 @@
 
   async function sendReservationNotification(name, teren, dateStr, timeStr) {
     try {
+      const message = `${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`;
+      console.log('Sending reservation notification:', message);
+      
       OneSignalDeferred.push(async function(OneSignal) {
-        const message = `${name} je rezervirao teren ${teren} za ${dateStr} u ${timeStr}`;
-        
-        if (await OneSignal.Notifications.permission) {
-          new Notification('Hoops', {
-            body: message,
-            icon: './assets/icon-192.png',
-            badge: './assets/icon-192.png'
-          });
+        const permission = await OneSignal.Notifications.permission;
+        if (permission) {
+          // Display local notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Hoops - Nova Rezervacija', {
+              body: message,
+              icon: './assets/icon-192.png',
+              badge: './assets/icon-192.png',
+              tag: 'reservation-notification',
+              requireInteraction: false
+            });
+          }
         }
-        
-        console.log('Reservation notification sent:', message);
       });
+      
     } catch (error) {
       console.error('Error sending reservation notification:', error);
     }
@@ -2323,6 +2374,7 @@
   
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+      // Register main service worker
       navigator.serviceWorker.register('./service_worker.js')
         .then(reg => {
           console.log('Service Worker registered successfully:', reg);
@@ -2360,12 +2412,16 @@
           console.error('Service Worker registration failed:', err);
         });
       
-      navigator.serviceWorker.register('./OneSignalSDKWorker.js')
+      // Register OneSignal service worker separately with scope
+      navigator.serviceWorker.register('./OneSignalSDKWorker.js', {
+        scope: '/push/onesignal/'
+      })
         .then(reg => {
           console.log('OneSignal Service Worker registered:', reg);
         })
         .catch(err => {
           console.error('OneSignal Service Worker registration failed:', err);
+          console.log('This is OK if OneSignal manages its own worker');
         });
     });
   }
