@@ -862,6 +862,7 @@
             <table id="leaderboardTable" class="games-table" style="display:none;">
               <thead>
                 <tr>
+                  <th class="center" style="width:60px">Rank</th>
                   <th>Name</th>
                   <th class="center">Wins</th>
                   <th class="center">Losses</th>
@@ -1879,8 +1880,8 @@
       
       gamesSnap.forEach(docSnap => {
         const g = docSnap.data();
-        const t1Key = (g.team1 || g.team1Key || '').toString().toLowerCase();
-        const t2Key = (g.team2 || g.team2Key || '').toString().toLowerCase();
+        const t1Key = (g.team1 || g.team1Key || '').toString().toLowerCase().trim();
+        const t2Key = (g.team2 || g.team2Key || '').toString().toLowerCase().trim();
           
         if (!t1Key || !t2Key) return;
         gameCount++;
@@ -1934,8 +1935,38 @@
         return ((b.pointsFor||0)-(b.pointsAgainst||0)) - ((a.pointsFor||0)-(a.pointsAgainst||0)); 
       });
 
-      arr.forEach(u => {
+      // Update table header to include rank
+      const leaderboardTableHead = leaderboardTable.querySelector('thead');
+      leaderboardTableHead.innerHTML = `
+        <tr>
+          <th class="center" style="width:60px">Rank</th>
+          <th>Name</th>
+          <th class="center">Wins</th>
+          <th class="center">Losses</th>
+          <th class="center">Diff</th>
+        </tr>
+      `;
+
+      arr.forEach((u, index) => {
+        const rank = index + 1;
         const tr = document.createElement('tr');
+        
+        // Create rank cell with medal emojis for top 3
+        const rankCell = document.createElement('td');
+        rankCell.className = 'center';
+        rankCell.style.fontWeight = '700';
+        rankCell.style.fontSize = '16px';
+        
+        if (rank === 1) {
+          rankCell.innerHTML = '🥇';
+        } else if (rank === 2) {
+          rankCell.innerHTML = '🥈';
+        } else if (rank === 3) {
+          rankCell.innerHTML = '🥉';
+        } else {
+          rankCell.textContent = rank;
+        }
+        
         const nameEl = document.createElement('a');
         nameEl.href = '#';
         nameEl.className = 'profile-link';
@@ -1957,6 +1988,7 @@
         tdDiff.className = 'center'; 
         tdDiff.textContent = (u.pointsFor||0)-(u.pointsAgainst||0);
         
+        tr.appendChild(rankCell);
         tr.appendChild(tdName); 
         tr.appendChild(tdWins); 
         tr.appendChild(tdLoss); 
@@ -1965,7 +1997,7 @@
       });
 
       leaderboardTable.style.display = 'table';
-      console.log('Leaderboard rendered with', arr.length, 'players');
+      console.log('Leaderboard rendered with', arr.length, 'unique players');
     } catch (error) {
       console.error('Error loading leaderboard:', error);
       leaderboardLoading.style.display = 'none';
