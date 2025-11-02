@@ -2290,19 +2290,28 @@
         .then(reg => {
           console.log('Service Worker registered successfully:', reg);
           
+          // Check for updates every minute, but don't auto-reload
           setInterval(() => {
             reg.update();
           }, 60000);
           
+          // Check for updates when user returns to tab
           window.addEventListener('focus', () => {
             reg.update();
           });
           
+          // Listen for new service worker
           reg.addEventListener('updatefound', () => {
             const newServiceWorker = reg.installing;
+            console.log('New service worker found, installing...');
+            
             newServiceWorker.addEventListener('statechange', () => {
+              console.log('Service worker state:', newServiceWorker.state);
+              
               if (newServiceWorker.state === 'installed') {
                 if (navigator.serviceWorker.controller) {
+                  // New service worker available, show update notification
+                  console.log('New service worker installed, waiting for user action');
                   showUpdateNotification();
                 } else {
                   console.log('Service Worker installed for the first time');
@@ -2311,10 +2320,8 @@
             });
           });
           
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('New service worker is controlling the page');
-            window.location.reload();
-          });
+          // Removed auto-reload on controller change
+          // User must click the update button to reload
         })
         .catch(err => {
           console.error('Service Worker registration failed:', err);
@@ -2331,18 +2338,36 @@
   }
 
   function showUpdateNotification() {
+    // Check if banner already exists
+    if (document.querySelector('.update-banner')) {
+      return;
+    }
+    
     const updateBanner = document.createElement('div');
     updateBanner.className = 'update-banner';
     updateBanner.style.display = 'flex';
     updateBanner.innerHTML = `
       <span>🔄 Nova verzija dostupna!</span>
       <button id="updateNowBtn">Ažuriraj Sada</button>
+      <button id="dismissUpdateBtn" style="margin-left:8px;">Kasnije</button>
     `;
     document.body.appendChild(updateBanner);
     
     document.getElementById('updateNowBtn').addEventListener('click', () => {
       console.log('User clicked update button');
-      window.location.reload();
+      // Tell the waiting service worker to skip waiting
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+      }
+      // Reload after a short delay to allow skipWaiting to complete
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    });
+    
+    document.getElementById('dismissUpdateBtn').addEventListener('click', () => {
+      console.log('User dismissed update notification');
+      updateBanner.remove();
     });
   }
 
