@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hoops-cache-v7';
+const CACHE_NAME = 'hoops-cache-v8';
 const urlsToCache = [
   './',
   './index.html',
@@ -21,8 +21,9 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
       .then(() => {
-        console.log('[SW] Skip waiting');
-        return self.skipWaiting();
+        console.log('[SW] Install complete - waiting');
+        // Don't skip waiting automatically
+        // return self.skipWaiting();
       })
   );
 });
@@ -125,7 +126,7 @@ self.addEventListener('message', event => {
   console.log('[SW] Message received:', event.data);
   
   if (event.data && event.data.action === 'skipWaiting') {
-    console.log('[SW] Skip waiting requested');
+    console.log('[SW] Skip waiting requested by user');
     self.skipWaiting();
   }
   
