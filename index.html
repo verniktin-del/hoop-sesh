@@ -916,59 +916,9 @@
   // Initialize OneSignal
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    try {
-      await OneSignal.init({
-        appId: "4b47aa4a-a11e-4f44-bab0-874fcfdf8e3f",
-        safari_web_id: "web.onesignal.auto.xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-        notifyButton: {
-          enable: false,
-        },
-        allowLocalhostAsSecureOrigin: true,
-      });
-      
-      console.log('OneSignal initialized');
-      
-      // Check current permission status
-      const isPushSupported = await OneSignal.Notifications.isPushSupported();
-      console.log('Push supported:', isPushSupported);
-      
-      const permission = await OneSignal.Notifications.permission;
-      console.log('Current permission:', permission);
-      
-      // Listen for permission changes
-      OneSignal.Notifications.addEventListener('permissionChange', (granted) => {
-        console.log('Notification permission changed:', granted);
-      });
-      
-      // Request permission if not yet granted
-      if (!permission) {
-        console.log('Requesting notification permission...');
-        const accepted = await OneSignal.Notifications.requestPermission();
-        console.log('Permission request result:', accepted);
-      }
-      
-      // Get the subscription ID (player ID)
-      OneSignal.User.PushSubscription.addEventListener('change', (subscription) => {
-        console.log('Push subscription changed:', subscription);
-        if (subscription.current.id) {
-          console.log('OneSignal Player ID:', subscription.current.id);
-          // Store player ID if needed
-          try {
-            localStorage.setItem('onesignal_player_id', subscription.current.id);
-          } catch(e) {
-            console.error('Could not save player ID:', e);
-          }
-        }
-      });
-      
-      // Listen for notification clicks
-      OneSignal.Notifications.addEventListener('click', (event) => {
-        console.log('Notification clicked:', event);
-      });
-      
-    } catch (error) {
-      console.error('OneSignal initialization error:', error);
-    }
+    await OneSignal.init({
+      appId: "4587d615-18e4-43f0-84c3-ac7e51feaff6",
+    });
   });
 
   // Set authentication persistence to LOCAL
